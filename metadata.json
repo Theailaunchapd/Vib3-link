@@ -1,0 +1,8 @@
+{
+  "name": "Vib3 Idea Link",
+  "description": "A next-generation link-in-bio platform powered by Gemini 2.5 and 3.0 models. Features AI-generated bios, custom avatars, video backgrounds with Veo, e-commerce store, and real-time voice assistants.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

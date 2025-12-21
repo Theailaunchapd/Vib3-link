@@ -158,7 +158,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onDemo
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrollY > 20 ? 'bg-white/80 backdrop-blur-xl border-b border-slate-200/50 py-3' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
             <div className="flex items-center gap-2 font-extrabold text-xl tracking-tighter cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-mono shadow-lg">V</div>
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-mono shadow-lg text-sm">V3</div>
                 Vib3 Idea Link
             </div>
             <div className="flex gap-4 items-center">
@@ -536,7 +536,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onDemo
       <footer className="bg-black text-white py-12 border-t border-white/10">
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
               <div className="flex items-center gap-2 font-bold">
-                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center text-black text-xs">V</div>
+                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center text-black text-xs">V3</div>
                   Vib3 Idea Link
               </div>
               <div className="text-sm">

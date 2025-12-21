@@ -62,7 +62,7 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
         <div className="hidden md:flex w-1/2 bg-black text-white flex-col justify-between p-12 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-black pointer-events-none"></div>
             <div className="relative z-10 font-extrabold text-2xl tracking-tighter flex items-center gap-2">
-                <div className="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center">V</div>
+                <div className="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center text-sm">V3</div>
                 Vib3 Idea Link
             </div>
             

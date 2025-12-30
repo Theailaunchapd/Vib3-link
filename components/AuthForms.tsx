@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth_login, auth_signup, auth_vib3SkoolLogin } from '../services/auth';
-import { Loader2, ArrowRight, GraduationCap, ChevronLeft, CreditCard, Lock, Check } from 'lucide-react';
+import { db_getPromoCodeByCode } from '../services/storage';
+import { Loader2, ArrowRight, GraduationCap, ChevronLeft, CreditCard, Lock, Check, AlertCircle } from 'lucide-react';
 
 interface AuthFormsProps {
   onSuccess: () => void;
@@ -19,11 +20,43 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [promoCode, setPromoCode] = useState("");
+  const [promoCodeValid, setPromoCodeValid] = useState<boolean | null>(null);
+  const [promoCodeError, setPromoCodeError] = useState<string>("");
   
   // Payment State (Mock)
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
+
+  // Validate promo code in real-time
+  useEffect(() => {
+    if (!promoCode || promoCode.trim().length === 0) {
+      setPromoCodeValid(null);
+      setPromoCodeError("");
+      return;
+    }
+
+    // Debounce validation slightly
+    const timer = setTimeout(() => {
+      const code = db_getPromoCodeByCode(promoCode.trim());
+      
+      if (!code) {
+        setPromoCodeValid(false);
+        setPromoCodeError("Invalid promo code");
+      } else if (!code.active) {
+        setPromoCodeValid(false);
+        setPromoCodeError("This promo code is no longer active");
+      } else if (code.usageLimit !== undefined && code.usedCount >= code.usageLimit) {
+        setPromoCodeValid(false);
+        setPromoCodeError("This promo code has reached its usage limit");
+      } else {
+        setPromoCodeValid(true);
+        setPromoCodeError("");
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [promoCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +69,9 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
         } else if (view === 'signup') {
             // Extract card info if provided (not promo code signup)
             let cardInfo = undefined;
-            if (!promoCode && cardNumber) {
+            const usePromoCode = promoCode && promoCodeValid;
+            
+            if (!usePromoCode && cardNumber) {
                 // In a real app, we would tokenize the card here via Stripe
                 // For now, just extract last 4 and detect brand
                 const lastFour = cardNumber.slice(-4);
@@ -46,7 +81,7 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                 cardInfo = { lastFour, brand };
             }
             
-            await auth_signup(username, email, password, promoCode || undefined, cardInfo);
+            await auth_signup(username, email, password, usePromoCode ? promoCode : undefined, cardInfo);
         } else {
             await auth_login(email, password);
         }
@@ -205,17 +240,31 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                                 <input 
                                     value={promoCode}
                                     onChange={e => setPromoCode(e.target.value.toUpperCase())}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-slate-900 placeholder:text-slate-400 uppercase"
+                                    className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 outline-none font-mono text-slate-900 placeholder:text-slate-400 uppercase ${
+                                        promoCodeValid === true ? 'border-green-500 focus:ring-green-500' :
+                                        promoCodeValid === false ? 'border-red-500 focus:ring-red-500' :
+                                        'border-gray-200 focus:ring-indigo-500'
+                                    }`}
                                     placeholder="ENTER CODE"
                                 />
-                                {promoCode && (
-                                    <p className="text-xs text-indigo-600 mt-1 font-medium">
-                                        ✨ Promo code will be validated at signup
+                                {promoCode && promoCodeValid === true && (
+                                    <p className="text-xs text-green-600 mt-1 font-medium flex items-center gap-1">
+                                        <Check size={14}/> Valid promo code - no payment required!
+                                    </p>
+                                )}
+                                {promoCode && promoCodeValid === false && (
+                                    <p className="text-xs text-red-600 mt-1 font-medium flex items-center gap-1">
+                                        <AlertCircle size={14}/> {promoCodeError}
+                                    </p>
+                                )}
+                                {promoCode && promoCodeValid === null && (
+                                    <p className="text-xs text-slate-500 mt-1 font-medium">
+                                        Validating...
                                     </p>
                                 )}
                             </div>
 
-                            {!promoCode && (
+                            {!promoCodeValid && (
                                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-4 animate-fade-in">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-xs font-bold uppercase text-slate-500 flex items-center gap-2">
@@ -228,7 +277,7 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                                     
                                     <div className="space-y-3">
                                         <input 
-                                            required={!promoCode}
+                                            required={!promoCodeValid}
                                             placeholder="Card Number"
                                             value={cardNumber}
                                             onChange={e => setCardNumber(e.target.value)}
@@ -236,14 +285,14 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                                         />
                                         <div className="flex gap-3">
                                             <input 
-                                                required={!promoCode}
+                                                required={!promoCodeValid}
                                                 placeholder="MM / YY"
                                                 value={expiry}
                                                 onChange={e => setExpiry(e.target.value)}
                                                 className="w-1/2 bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                                             />
                                             <input 
-                                                required={!promoCode}
+                                                required={!promoCodeValid}
                                                 placeholder="CVC"
                                                 value={cvc}
                                                 onChange={e => setCvc(e.target.value)}
@@ -265,8 +314,8 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                                 </div>
                             )}
 
-                            {promoCode && (
-                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border-2 border-indigo-200 animate-fade-in">
+                            {promoCodeValid === true && (
+                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200 animate-fade-in">
                                     <div className="flex items-start gap-3">
                                         <div className="text-2xl">🎉</div>
                                         <div>

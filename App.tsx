@@ -12,7 +12,7 @@ import AuthForms from './components/AuthForms';
 import SubscriptionGate from './components/SubscriptionGate';
 import AdminDashboard from './components/AdminDashboard';
 import AdminLogin from './components/AdminLogin';
-import { db_saveProfile, db_getProfileByUsername, createDemoProfile } from './services/storage';
+import { db_saveProfile, db_getProfileByUsername, createDemoProfile, db_seedDefaultPromoCodes } from './services/storage';
 import { auth_getCurrentUser, auth_isAdmin, auth_adminLogout } from './services/auth';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
@@ -30,6 +30,9 @@ const App: React.FC = () => {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    // Initialize default promo codes
+    db_seedDefaultPromoCodes();
+    
     // 1. Check for Public Profile URL Param (?u=username)
     const params = new URLSearchParams(window.location.search);
     const usernameParam = params.get('u');

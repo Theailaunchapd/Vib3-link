@@ -408,3 +408,23 @@ export const db_validateAndUsePromoCode = (code: string): { valid: boolean; prom
   
   return { valid: true, promoCode };
 };
+
+// Seed default promo codes
+export const db_seedDefaultPromoCodes = () => {
+  // Check if vib3idea code already exists
+  const existing = db_getPromoCodeByCode('vib3idea');
+  if (!existing) {
+    const defaultPromo: PromoCode = {
+      id: 'promo_default_vib3idea',
+      code: 'VIB3IDEA',
+      description: 'Default promo code for Vib3 Idea community',
+      type: 'lifetime',
+      usageLimit: undefined,
+      usedCount: 0,
+      createdAt: new Date().toISOString(),
+      createdBy: 'system',
+      active: true
+    };
+    db_savePromoCode(defaultPromo);
+  }
+};

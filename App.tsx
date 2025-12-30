@@ -146,17 +146,32 @@ const App: React.FC = () => {
 
   // 5. Dashboard (Analytics & Inventory)
   if (view === 'dashboard' && profile) {
-    if (currentUser && currentUser.subscriptionStatus === 'expired' && !currentUser.isVib3Skool) {
-       return <SubscriptionGate user={currentUser} onSuccess={refreshSession} />;
+    // Block access if subscription expired (but allow promo_access, skool, active, trial)
+    const hasAccess = currentUser && (
+      currentUser.subscriptionStatus === 'active' || 
+      currentUser.subscriptionStatus === 'trial' || 
+      currentUser.subscriptionStatus === 'promo_access' ||
+      currentUser.isVib3Skool
+    );
+    
+    if (!hasAccess) {
+       return <SubscriptionGate user={currentUser!} onSuccess={refreshSession} />;
     }
     return <Dashboard profile={profile} setProfile={setProfile as any} onBack={() => setView('editor')} />;
   }
 
   // 6. Editor (Protected)
   if (view === 'editor' && profile) {
-    // Check Subscription
-    if (currentUser && currentUser.subscriptionStatus === 'expired' && !currentUser.isVib3Skool) {
-        return <SubscriptionGate user={currentUser} onSuccess={refreshSession} />;
+    // Block access if subscription expired (but allow promo_access, skool, active, trial)
+    const hasAccess = currentUser && (
+      currentUser.subscriptionStatus === 'active' || 
+      currentUser.subscriptionStatus === 'trial' || 
+      currentUser.subscriptionStatus === 'promo_access' ||
+      currentUser.isVib3Skool
+    );
+    
+    if (!hasAccess) {
+        return <SubscriptionGate user={currentUser!} onSuccess={refreshSession} />;
     }
 
     return (

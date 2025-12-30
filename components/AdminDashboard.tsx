@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { User } from '../types';
-import { db_getAllUsers, db_deleteUser, db_seedTestUsers } from '../services/storage';
+import { User, PromoCode } from '../types';
+import { db_getAllUsers, db_deleteUser, db_seedTestUsers, db_getAllPromoCodes, db_savePromoCode, db_deletePromoCode, db_updatePromoCode } from '../services/storage';
 import { 
   Users, DollarSign, Clock, ShieldCheck, GraduationCap, 
-  Trash2, Search, Filter, LogOut
+  Trash2, Search, Filter, LogOut, Tag, Plus, X, Edit2
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -13,16 +13,34 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState<'all' | 'active' | 'trial' | 'expired' | 'skool'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'trial' | 'expired' | 'skool' | 'promo'>('all');
+  const [activeTab, setActiveTab] = useState<'users' | 'promos'>('users');
+  const [showPromoForm, setShowPromoForm] = useState(false);
+  
+  // Promo Form State
+  const [promoFormData, setPromoFormData] = useState({
+    code: '',
+    description: '',
+    type: 'lifetime' as PromoCode['type'],
+    usageLimit: '',
+    active: true
+  });
 
   useEffect(() => {
     loadUsers();
+    loadPromoCodes();
   }, []);
 
   const loadUsers = () => {
     const allUsers = db_getAllUsers();
     setUsers(allUsers);
+  };
+
+  const loadPromoCodes = () => {
+    const codes = db_getAllPromoCodes();
+    setPromoCodes(codes);
   };
 
   const handleDelete = (userId: string) => {
@@ -37,6 +55,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     loadUsers();
   };
 
+  const handleCreatePromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newPromo: PromoCode = {
+      id: 'promo_' + Date.now(),
+      code: promoFormData.code.toUpperCase().trim(),
+      description: promoFormData.description,
+      type: promoFormData.type,
+      usageLimit: promoFormData.usageLimit ? parseInt(promoFormData.usageLimit) : undefined,
+      usedCount: 0,
+      createdAt: new Date().toISOString(),
+      createdBy: 'admin',
+      active: promoFormData.active
+    };
+    
+    db_savePromoCode(newPromo);
+    loadPromoCodes();
+    setShowPromoForm(false);
+    setPromoFormData({
+      code: '',
+      description: '',
+      type: 'lifetime',
+      usageLimit: '',
+      active: true
+    });
+  };
+
+  const handleDeletePromo = (promoId: string) => {
+    if (confirm("Delete this promo code? Users who already used it will keep their access.")) {
+      db_deletePromoCode(promoId);
+      loadPromoCodes();
+    }
+  };
+
+  const handleTogglePromoActive = (promo: PromoCode) => {
+    const updated = { ...promo, active: !promo.active };
+    db_updatePromoCode(updated);
+    loadPromoCodes();
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -46,6 +103,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     if (filter === 'active') return matchesSearch && user.subscriptionStatus === 'active';
     if (filter === 'trial') return matchesSearch && user.subscriptionStatus === 'trial';
     if (filter === 'expired') return matchesSearch && user.subscriptionStatus === 'expired';
+    if (filter === 'promo') return matchesSearch && user.subscriptionStatus === 'promo_access';
     
     return matchesSearch;
   });
@@ -76,6 +134,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 flex gap-2">
+              <button 
+                onClick={() => setActiveTab('users')}
+                className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${activeTab === 'users' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-gray-50'}`}
+              >
+                  <Users size={18}/> Users
+              </button>
+              <button 
+                onClick={() => setActiveTab('promos')}
+                className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${activeTab === 'promos' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-gray-50'}`}
+              >
+                  <Tag size={18}/> Promo Codes
+              </button>
+          </div>
+
+      {activeTab === 'users' ? (
+        <>
           {/* Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
@@ -121,7 +197,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </div>
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
                   <Filter size={16} className="text-slate-400 mr-1"/>
-                  {['all', 'active', 'trial', 'skool', 'expired'].map(f => (
+                  {['all', 'active', 'trial', 'promo', 'skool', 'expired'].map(f => (
                       <button 
                         key={f}
                         onClick={() => setFilter(f as any)}
@@ -158,13 +234,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                                       </div>
                                   </td>
                                   <td className="px-6 py-4">
-                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                                        ${user.subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 
-                                          user.subscriptionStatus === 'trial' ? 'bg-orange-100 text-orange-800' :
-                                          user.subscriptionStatus === 'skool_member' ? 'bg-indigo-100 text-indigo-800' :
-                                          'bg-red-100 text-red-800'}`}>
-                                          {user.subscriptionStatus.replace('_', ' ')}
-                                      </span>
+                                      <div className="flex flex-col gap-1">
+                                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize w-fit
+                                            ${user.subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 
+                                              user.subscriptionStatus === 'trial' ? 'bg-orange-100 text-orange-800' :
+                                              user.subscriptionStatus === 'promo_access' ? 'bg-purple-100 text-purple-800' :
+                                              user.subscriptionStatus === 'skool_member' ? 'bg-indigo-100 text-indigo-800' :
+                                              'bg-red-100 text-red-800'}`}>
+                                              {user.subscriptionStatus.replace('_', ' ')}
+                                          </span>
+                                          {user.promoCodeUsed && (
+                                              <span className="text-xs text-slate-500 font-mono">Code: {user.promoCodeUsed}</span>
+                                          )}
+                                      </div>
                                   </td>
                                   <td className="px-6 py-4 text-sm text-slate-500">
                                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
@@ -190,6 +272,133 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </tbody>
               </table>
           </div>
+      </>
+      ) : (
+        <>
+          {/* Promo Codes Tab */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex justify-between items-center mb-6">
+                  <div>
+                      <h2 className="text-xl font-bold text-slate-900">Promo Codes</h2>
+                      <p className="text-sm text-slate-500 mt-1">Create and manage promotional access codes</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowPromoForm(!showPromoForm)}
+                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                  >
+                      {showPromoForm ? <X size={16}/> : <Plus size={16}/>}
+                      {showPromoForm ? 'Cancel' : 'Create Code'}
+                  </button>
+              </div>
+
+              {showPromoForm && (
+                  <form onSubmit={handleCreatePromo} className="bg-slate-50 rounded-xl p-6 mb-6 border border-slate-200 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Code</label>
+                              <input 
+                                  required
+                                  value={promoFormData.code}
+                                  onChange={e => setPromoFormData({...promoFormData, code: e.target.value.toUpperCase()})}
+                                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-mono uppercase"
+                                  placeholder="SUMMER2024"
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Type</label>
+                              <select 
+                                  value={promoFormData.type}
+                                  onChange={e => setPromoFormData({...promoFormData, type: e.target.value as PromoCode['type']})}
+                                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                              >
+                                  <option value="lifetime">Lifetime Access</option>
+                                  <option value="free_month">Free Month</option>
+                                  <option value="trial_extension">Trial Extension (30 days)</option>
+                              </select>
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Description</label>
+                          <input 
+                              required
+                              value={promoFormData.description}
+                              onChange={e => setPromoFormData({...promoFormData, description: e.target.value})}
+                              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                              placeholder="For VIP members"
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Usage Limit (Optional)</label>
+                          <input 
+                              type="number"
+                              value={promoFormData.usageLimit}
+                              onChange={e => setPromoFormData({...promoFormData, usageLimit: e.target.value})}
+                              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                              placeholder="Leave empty for unlimited"
+                              min="1"
+                          />
+                      </div>
+                      <button 
+                        type="submit"
+                        className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700"
+                      >
+                          Create Promo Code
+                      </button>
+                  </form>
+              )}
+
+              {promoCodes.length > 0 ? (
+                  <div className="space-y-3">
+                      {promoCodes.map(promo => (
+                          <div key={promo.id} className={`border rounded-xl p-4 ${promo.active ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-300 opacity-60'}`}>
+                              <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                          <span className="font-mono font-bold text-lg text-slate-900">{promo.code}</span>
+                                          <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                              promo.type === 'lifetime' ? 'bg-purple-100 text-purple-700' :
+                                              promo.type === 'free_month' ? 'bg-blue-100 text-blue-700' :
+                                              'bg-orange-100 text-orange-700'
+                                          }`}>
+                                              {promo.type === 'lifetime' ? 'Lifetime' : promo.type === 'free_month' ? 'Free Month' : 'Trial Extension'}
+                                          </span>
+                                          {!promo.active && <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">Inactive</span>}
+                                      </div>
+                                      <p className="text-sm text-slate-600 mb-2">{promo.description}</p>
+                                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                                          <span>Used: <strong>{promo.usedCount}</strong>{promo.usageLimit ? ` / ${promo.usageLimit}` : ' (unlimited)'}</span>
+                                          <span>Created: {new Date(promo.createdAt).toLocaleDateString()}</span>
+                                      </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                      <button 
+                                        onClick={() => handleTogglePromoActive(promo)}
+                                        className={`p-2 rounded-lg transition-colors ${promo.active ? 'text-slate-400 hover:bg-orange-50 hover:text-orange-600' : 'text-slate-400 hover:bg-green-50 hover:text-green-600'}`}
+                                        title={promo.active ? 'Deactivate' : 'Activate'}
+                                      >
+                                          <Edit2 size={18}/>
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeletePromo(promo.id)}
+                                        className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                                        title="Delete"
+                                      >
+                                          <Trash2 size={18}/>
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                  <div className="text-center py-12 text-slate-500">
+                      <Tag size={48} className="mx-auto mb-4 opacity-20"/>
+                      <p>No promo codes yet. Create one to get started!</p>
+                  </div>
+              )}
+          </div>
+        </>
+      )}
       </div>
     </div>
   );

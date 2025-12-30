@@ -18,6 +18,7 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   
   // Payment State (Mock)
   const [cardNumber, setCardNumber] = useState("");
@@ -34,7 +35,7 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
             await auth_vib3SkoolLogin(email, password);
         } else if (view === 'signup') {
             // In a real app, we would tokenize the card here via Stripe
-            await auth_signup(username, email, password);
+            await auth_signup(username, email, password, promoCode || undefined);
         } else {
             await auth_login(email, password);
         }
@@ -183,53 +184,88 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                     </div>
 
                     {view === 'signup' && (
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-4 mt-6 animate-fade-in">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xs font-bold uppercase text-slate-500 flex items-center gap-2">
-                                    <CreditCard size={14}/> Billing Information
-                                </h3>
-                                <div className="flex items-center gap-1 text-[10px] text-green-600 font-bold bg-green-100 px-2 py-0.5 rounded-full">
-                                    <Lock size={10}/> SECURE
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-3">
+                        <>
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                                    Promo Code <span className="text-slate-400 font-normal">(Optional)</span>
+                                </label>
                                 <input 
-                                    required
-                                    placeholder="Card Number"
-                                    value={cardNumber}
-                                    onChange={e => setCardNumber(e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                                    value={promoCode}
+                                    onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-slate-900 placeholder:text-slate-400 uppercase"
+                                    placeholder="ENTER CODE"
                                 />
-                                <div className="flex gap-3">
-                                    <input 
-                                        required
-                                        placeholder="MM / YY"
-                                        value={expiry}
-                                        onChange={e => setExpiry(e.target.value)}
-                                        className="w-1/2 bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-                                    />
-                                    <input 
-                                        required
-                                        placeholder="CVC"
-                                        value={cvc}
-                                        onChange={e => setCvc(e.target.value)}
-                                        className="w-1/2 bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-                                    />
-                                </div>
+                                {promoCode && (
+                                    <p className="text-xs text-indigo-600 mt-1 font-medium">
+                                        ✨ Promo code will be validated at signup
+                                    </p>
+                                )}
                             </div>
 
-                            <div className="pt-3 border-t border-slate-200">
-                                <div className="flex justify-between items-center text-sm mb-1">
-                                    <span className="font-bold text-slate-700">Due today</span>
-                                    <span className="font-bold text-slate-900">$0.00</span>
+                            {!promoCode && (
+                                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-4 animate-fade-in">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-bold uppercase text-slate-500 flex items-center gap-2">
+                                            <CreditCard size={14}/> Billing Information
+                                        </h3>
+                                        <div className="flex items-center gap-1 text-[10px] text-green-600 font-bold bg-green-100 px-2 py-0.5 rounded-full">
+                                            <Lock size={10}/> SECURE
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                        <input 
+                                            required={!promoCode}
+                                            placeholder="Card Number"
+                                            value={cardNumber}
+                                            onChange={e => setCardNumber(e.target.value)}
+                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                                        />
+                                        <div className="flex gap-3">
+                                            <input 
+                                                required={!promoCode}
+                                                placeholder="MM / YY"
+                                                value={expiry}
+                                                onChange={e => setExpiry(e.target.value)}
+                                                className="w-1/2 bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                                            />
+                                            <input 
+                                                required={!promoCode}
+                                                placeholder="CVC"
+                                                value={cvc}
+                                                onChange={e => setCvc(e.target.value)}
+                                                className="w-1/2 bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-3 border-t border-slate-200">
+                                        <div className="flex justify-between items-center text-sm mb-1">
+                                            <span className="font-bold text-slate-700">Due today</span>
+                                            <span className="font-bold text-slate-900">$0.00</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs text-slate-500">
+                                            <span>Recurring (after 14 days)</span>
+                                            <span>$15.00/mo</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-center text-xs text-slate-500">
-                                    <span>Recurring (after 14 days)</span>
-                                    <span>$15.00/mo</span>
+                            )}
+
+                            {promoCode && (
+                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border-2 border-indigo-200 animate-fade-in">
+                                    <div className="flex items-start gap-3">
+                                        <div className="text-2xl">🎉</div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900 mb-1">Promo Code Applied</h4>
+                                            <p className="text-sm text-slate-600">
+                                                No credit card required! Your promo code will grant you access without payment.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            )}
+                        </>
                     )}
 
                     <button 

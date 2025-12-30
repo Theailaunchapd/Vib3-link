@@ -1,7 +1,7 @@
 
 
 import { User, UserProfile } from '../types';
-import { db_getUserByEmail, db_getUserByUsername, db_saveUser, db_updateUser, db_saveProfile, createDefaultProfile, db_getProfileByUsername } from './storage';
+import { db_getUserByEmail, db_getUserByUsername, db_saveUser, db_updateUser, db_saveProfile, createDefaultProfile, db_getProfileByUsername, db_validateAndUsePromoCode } from './storage';
 
 const SESSION_KEY = 'vib3_session'; // Stores userId
 
@@ -25,6 +25,16 @@ export const auth_getCurrentUser = (): { user: User, profile: UserProfile } | nu
                 db_updateUser(user); // Persist expiration
             }
         }
+        
+        // Check for promo_access expiration (if it has an end date)
+        if (user.subscriptionStatus === 'promo_access' && user.trialEndsAt) {
+            const now = new Date();
+            const accessEnd = new Date(user.trialEndsAt);
+            if (now > accessEnd) {
+                user.subscriptionStatus = 'expired';
+                db_updateUser(user); // Persist expiration
+            }
+        }
 
         const profile = db_getProfileByUsername(user.username);
         if (profile) return { user, profile };
@@ -35,7 +45,7 @@ export const auth_getCurrentUser = (): { user: User, profile: UserProfile } | nu
     return null;
 };
 
-export const auth_signup = (username: string, email: string, password: string): Promise<string> => {
+export const auth_signup = (username: string, email: string, password: string, promoCode?: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             // Validation
@@ -48,9 +58,43 @@ export const auth_signup = (username: string, email: string, password: string): 
                 return;
             }
 
-            // Calculate Trial End (14 days)
-            const trialEnd = new Date();
-            trialEnd.setDate(trialEnd.getDate() + 14);
+            let subscriptionStatus: User['subscriptionStatus'] = 'trial';
+            let trialEndsAt: string | undefined;
+            let usedPromoCode: string | undefined;
+
+            // Check if promo code was provided
+            if (promoCode && promoCode.trim()) {
+                const promoResult = db_validateAndUsePromoCode(promoCode.trim());
+                if (!promoResult.valid) {
+                    reject(promoResult.error || "Invalid promo code");
+                    return;
+                }
+                
+                // Apply promo code benefits
+                if (promoResult.promoCode) {
+                    usedPromoCode = promoResult.promoCode.code;
+                    
+                    if (promoResult.promoCode.type === 'lifetime') {
+                        subscriptionStatus = 'promo_access';
+                        trialEndsAt = undefined; // No expiration
+                    } else if (promoResult.promoCode.type === 'trial_extension') {
+                        subscriptionStatus = 'trial';
+                        const trialEnd = new Date();
+                        trialEnd.setDate(trialEnd.getDate() + 30); // 30 days instead of 14
+                        trialEndsAt = trialEnd.toISOString();
+                    } else if (promoResult.promoCode.type === 'free_month') {
+                        subscriptionStatus = 'promo_access';
+                        const accessEnd = new Date();
+                        accessEnd.setDate(accessEnd.getDate() + 30);
+                        trialEndsAt = accessEnd.toISOString();
+                    }
+                }
+            } else {
+                // Standard trial (14 days)
+                const trialEnd = new Date();
+                trialEnd.setDate(trialEnd.getDate() + 14);
+                trialEndsAt = trialEnd.toISOString();
+            }
 
             // Create User
             const newUser: User = {
@@ -58,9 +102,10 @@ export const auth_signup = (username: string, email: string, password: string): 
                 username: username.replace(/\s+/g, '').toLowerCase(), // sanitize handle
                 email,
                 password, // Mock storage - DO NOT DO THIS IN PRODUCTION
-                subscriptionStatus: 'trial',
-                trialEndsAt: trialEnd.toISOString(),
+                subscriptionStatus,
+                trialEndsAt,
                 isVib3Skool: false,
+                promoCodeUsed: usedPromoCode,
                 createdAt: new Date().toISOString()
             };
             db_saveUser(newUser);
@@ -159,6 +204,52 @@ export const auth_subscribeUser = (userId: string): Promise<void> => {
             }
             resolve();
         }, 1000);
+    });
+};
+
+export const auth_applyPromoCode = (userId: string, promoCode: string): Promise<{ success: boolean; message: string }> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const promoResult = db_validateAndUsePromoCode(promoCode.trim());
+            
+            if (!promoResult.valid) {
+                resolve({ success: false, message: promoResult.error || "Invalid promo code" });
+                return;
+            }
+            
+            const usersString = localStorage.getItem('vib3_users');
+            if (usersString && promoResult.promoCode) {
+                const users: User[] = JSON.parse(usersString);
+                const user = users.find(u => u.id === userId);
+                
+                if (user) {
+                    user.promoCodeUsed = promoResult.promoCode.code;
+                    
+                    if (promoResult.promoCode.type === 'lifetime') {
+                        user.subscriptionStatus = 'promo_access';
+                        user.trialEndsAt = undefined;
+                        resolve({ success: true, message: "Lifetime access granted! 🎉" });
+                    } else if (promoResult.promoCode.type === 'trial_extension') {
+                        user.subscriptionStatus = 'trial';
+                        const trialEnd = new Date();
+                        trialEnd.setDate(trialEnd.getDate() + 30);
+                        user.trialEndsAt = trialEnd.toISOString();
+                        resolve({ success: true, message: "Trial extended by 30 days! 🎉" });
+                    } else if (promoResult.promoCode.type === 'free_month') {
+                        user.subscriptionStatus = 'promo_access';
+                        const accessEnd = new Date();
+                        accessEnd.setDate(accessEnd.getDate() + 30);
+                        user.trialEndsAt = accessEnd.toISOString();
+                        resolve({ success: true, message: "Free month access granted! 🎉" });
+                    }
+                    
+                    db_updateUser(user);
+                    return;
+                }
+            }
+            
+            resolve({ success: false, message: "Failed to apply promo code" });
+        }, 800);
     });
 };
 

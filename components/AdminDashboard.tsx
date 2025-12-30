@@ -688,9 +688,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   <div className="text-lg font-bold text-orange-600">{getDaysRemaining(selectedUser)} days</div>
                 </div>
               )}
+              <div>
+                <div className="text-sm font-bold text-slate-500 uppercase mb-1">Payment Method</div>
+                {selectedUser.paymentMethodSaved ? (
+                  <div className="flex items-center gap-2">
+                    <CreditCard size={16} className="text-green-600"/>
+                    <span className="text-sm text-slate-700 font-medium">
+                      {selectedUser.cardBrand?.toUpperCase()} •••• {selectedUser.lastFourDigits}
+                    </span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">
+                      Auto-charge enabled
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <XCircle size={16} className="text-red-600"/>
+                    <span className="text-sm text-slate-500">No payment method</span>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mt-6">
               <div className="text-sm font-bold text-slate-500 uppercase mb-2">Quick Actions</div>
 
               {selectedUser.subscriptionStatus !== 'active' && (

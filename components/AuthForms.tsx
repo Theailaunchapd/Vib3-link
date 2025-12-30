@@ -34,8 +34,19 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
         if (view === 'skool_login') {
             await auth_vib3SkoolLogin(email, password);
         } else if (view === 'signup') {
-            // In a real app, we would tokenize the card here via Stripe
-            await auth_signup(username, email, password, promoCode || undefined);
+            // Extract card info if provided (not promo code signup)
+            let cardInfo = undefined;
+            if (!promoCode && cardNumber) {
+                // In a real app, we would tokenize the card here via Stripe
+                // For now, just extract last 4 and detect brand
+                const lastFour = cardNumber.slice(-4);
+                const brand = cardNumber.startsWith('4') ? 'visa' : 
+                             cardNumber.startsWith('5') ? 'mastercard' : 
+                             cardNumber.startsWith('3') ? 'amex' : 'unknown';
+                cardInfo = { lastFour, brand };
+            }
+            
+            await auth_signup(username, email, password, promoCode || undefined, cardInfo);
         } else {
             await auth_login(email, password);
         }

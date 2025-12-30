@@ -192,11 +192,66 @@ export const db_seedTestUsers = () => {
     if (existing.length > 5) return; // Don't overfill if data exists
 
     const dummyUsers: User[] = [
-        { id: 'u1', username: 'sarah_design', email: 'sarah@example.com', password: '123', subscriptionStatus: 'active', isVib3Skool: false, createdAt: new Date(Date.now() - 86400000 * 30).toISOString() },
-        { id: 'u2', username: 'mike_codes', email: 'mike@example.com', password: '123', subscriptionStatus: 'trial', trialEndsAt: new Date(Date.now() + 86400000 * 5).toISOString(), isVib3Skool: false, createdAt: new Date().toISOString() },
-        { id: 'u3', username: 'jess_fitness', email: 'jess@vib3skool.com', password: '123', subscriptionStatus: 'skool_member', isVib3Skool: true, createdAt: new Date(Date.now() - 86400000 * 10).toISOString() },
-        { id: 'u4', username: 'expired_tom', email: 'tom@example.com', password: '123', subscriptionStatus: 'expired', isVib3Skool: false, createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
-        { id: 'u5', username: 'new_trial_user', email: 'trial@example.com', password: '123', subscriptionStatus: 'trial', trialEndsAt: new Date(Date.now() + 86400000 * 13).toISOString(), isVib3Skool: false, createdAt: new Date().toISOString() },
+        { 
+            id: 'u1', 
+            username: 'sarah_design', 
+            email: 'sarah@example.com', 
+            password: '123', 
+            subscriptionStatus: 'active', 
+            isVib3Skool: false, 
+            createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
+            paymentMethodSaved: true,
+            lastFourDigits: '4242',
+            cardBrand: 'visa',
+            stripeCustomerId: 'cus_sarah123'
+        },
+        { 
+            id: 'u2', 
+            username: 'mike_codes', 
+            email: 'mike@example.com', 
+            password: '123', 
+            subscriptionStatus: 'trial', 
+            trialEndsAt: new Date(Date.now() + 86400000 * 5).toISOString(), 
+            isVib3Skool: false, 
+            createdAt: new Date().toISOString(),
+            paymentMethodSaved: true,
+            lastFourDigits: '5555',
+            cardBrand: 'mastercard',
+            stripeCustomerId: 'cus_mike456'
+        },
+        { 
+            id: 'u3', 
+            username: 'jess_fitness', 
+            email: 'jess@vib3skool.com', 
+            password: '123', 
+            subscriptionStatus: 'skool_member', 
+            isVib3Skool: true, 
+            createdAt: new Date(Date.now() - 86400000 * 10).toISOString() 
+        },
+        { 
+            id: 'u4', 
+            username: 'expired_tom', 
+            email: 'tom@example.com', 
+            password: '123', 
+            subscriptionStatus: 'expired', 
+            isVib3Skool: false, 
+            createdAt: new Date(Date.now() - 86400000 * 20).toISOString(),
+            paymentMethodSaved: false
+        },
+        { 
+            id: 'u5', 
+            username: 'new_trial_user', 
+            email: 'trial@example.com', 
+            password: '123', 
+            subscriptionStatus: 'trial', 
+            trialEndsAt: new Date(Date.now() + 86400000 * 13).toISOString(), 
+            isVib3Skool: false, 
+            createdAt: new Date().toISOString(),
+            paymentMethodSaved: true,
+            lastFourDigits: '1234',
+            cardBrand: 'visa',
+            stripeCustomerId: 'cus_trial789'
+        },
     ];
 
     dummyUsers.forEach(u => {

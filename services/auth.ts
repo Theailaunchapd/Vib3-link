@@ -1,7 +1,7 @@
 
 
-import { User, UserProfile } from '../types';
-import { db_getUserByEmail, db_getUserByUsername, db_saveUser, db_updateUser, db_saveProfile, createDefaultProfile, db_getProfileByUsername, db_validateAndUsePromoCode } from './storage';
+import { User, UserProfile, StripePayment } from '../types';
+import { db_getUserByEmail, db_getUserByUsername, db_saveUser, db_updateUser, db_saveProfile, createDefaultProfile, db_getProfileByUsername, db_validateAndUsePromoCode, db_savePayment } from './storage';
 
 const SESSION_KEY = 'vib3_session'; // Stores userId
 const ADMIN_SESSION_KEY = 'vib3_admin_session'; // Admin session
@@ -21,13 +21,13 @@ export const auth_getCurrentUser = (): { user: User, profile: UserProfile } | nu
     let user = users.find(u => u.id === sessionUserId);
 
     if (user) {
-        // Check for trial expiration
+        // Check for trial expiration and attempt auto-charge
         if (user.subscriptionStatus === 'trial' && user.trialEndsAt) {
             const now = new Date();
             const trialEnd = new Date(user.trialEndsAt);
             if (now > trialEnd) {
-                user.subscriptionStatus = 'expired';
-                db_updateUser(user); // Persist expiration
+                // Attempt to automatically charge and convert to paid subscription
+                auth_processTrialExpiration(user);
             }
         }
         
@@ -50,7 +50,7 @@ export const auth_getCurrentUser = (): { user: User, profile: UserProfile } | nu
     return null;
 };
 
-export const auth_signup = (username: string, email: string, password: string, promoCode?: string): Promise<string> => {
+export const auth_signup = (username: string, email: string, password: string, promoCode?: string, cardInfo?: { lastFour: string, brand: string }): Promise<string> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             // Validation
@@ -101,7 +101,7 @@ export const auth_signup = (username: string, email: string, password: string, p
                 trialEndsAt = trialEnd.toISOString();
             }
 
-            // Create User
+            // Create User with payment info
             const newUser: User = {
                 id: 'user_' + Date.now(),
                 username: username.replace(/\s+/g, '').toLowerCase(), // sanitize handle
@@ -111,7 +111,12 @@ export const auth_signup = (username: string, email: string, password: string, p
                 trialEndsAt,
                 isVib3Skool: false,
                 promoCodeUsed: usedPromoCode,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                // Save payment method info (if card was provided)
+                paymentMethodSaved: cardInfo ? true : false,
+                lastFourDigits: cardInfo?.lastFour,
+                cardBrand: cardInfo?.brand,
+                stripeCustomerId: cardInfo ? 'cus_' + Math.random().toString(36).substr(2, 14) : undefined
             };
             db_saveUser(newUser);
 
@@ -261,6 +266,73 @@ export const auth_applyPromoCode = (userId: string, promoCode: string): Promise<
             resolve({ success: false, message: "Failed to apply promo code" });
         }, 800);
     });
+};
+
+// Process trial expiration - attempt to charge saved payment method
+const auth_processTrialExpiration = (user: User): void => {
+    // Check if user has a saved payment method
+    if (user.paymentMethodSaved && user.stripeCustomerId) {
+        // Simulate payment processing
+        // In production, this would call Stripe API to charge the saved card
+        const paymentSuccessful = simulatePaymentCharge(user);
+        
+        if (paymentSuccessful) {
+            // Payment successful - convert to active subscription
+            user.subscriptionStatus = 'active';
+            user.trialEndsAt = undefined;
+            db_updateUser(user);
+            
+            // Record successful payment
+            const payment: StripePayment = {
+                id: 'pay_auto_' + Date.now(),
+                userId: user.id,
+                username: user.username,
+                email: user.email,
+                amount: 15,
+                status: 'success',
+                paymentType: 'subscription',
+                productName: 'Monthly Subscription (Auto-charged)',
+                stripePaymentId: 'pi_auto_' + Math.random().toString(36).substr(2, 9),
+                createdAt: new Date().toISOString()
+            };
+            db_savePayment(payment);
+            
+            console.log(`✅ Auto-charged ${user.email} $15 for subscription`);
+        } else {
+            // Payment failed - mark as expired
+            user.subscriptionStatus = 'expired';
+            db_updateUser(user);
+            
+            // Record failed payment
+            const payment: StripePayment = {
+                id: 'pay_auto_failed_' + Date.now(),
+                userId: user.id,
+                username: user.username,
+                email: user.email,
+                amount: 15,
+                status: 'failed',
+                paymentType: 'subscription',
+                productName: 'Monthly Subscription (Auto-charge failed)',
+                errorMessage: 'Card declined - insufficient funds',
+                createdAt: new Date().toISOString()
+            };
+            db_savePayment(payment);
+            
+            console.log(`❌ Auto-charge failed for ${user.email}`);
+        }
+    } else {
+        // No payment method saved - just expire the trial
+        user.subscriptionStatus = 'expired';
+        db_updateUser(user);
+        console.log(`⚠️ Trial expired for ${user.email} - no payment method on file`);
+    }
+};
+
+// Simulate payment charge (85% success rate)
+// In production, this would be replaced with actual Stripe API call
+const simulatePaymentCharge = (user: User): boolean => {
+    // Simulate 85% success rate for payments
+    return Math.random() > 0.15;
 };
 
 export const auth_logout = () => {

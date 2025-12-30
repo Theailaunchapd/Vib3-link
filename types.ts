@@ -74,6 +74,12 @@ export interface User {
   isVib3Skool?: boolean;
   promoCodeUsed?: string; // The promo code they used
   createdAt?: string; // Signup timestamp
+  
+  // Payment Info (simulated - in production this would be tokenized)
+  paymentMethodSaved?: boolean;
+  lastFourDigits?: string; // Last 4 digits of card
+  cardBrand?: string; // visa, mastercard, etc
+  stripeCustomerId?: string; // Stripe customer ID
 }
 
 export interface StripeConfig {

@@ -126,10 +126,15 @@ export const auth_signup = (username: string, email: string, password: string, p
     });
 };
 
-export const auth_login = (email: string, password: string): Promise<string> => {
+export const auth_login = (emailOrUsername: string, password: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            const user = db_getUserByEmail(email);
+            // Try to find user by email first, then by username
+            let user = db_getUserByEmail(emailOrUsername);
+            if (!user) {
+                user = db_getUserByUsername(emailOrUsername);
+            }
+
             if (!user || user.password !== password) {
                 reject("Invalid credentials.");
                 return;

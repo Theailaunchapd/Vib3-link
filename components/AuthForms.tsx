@@ -160,14 +160,16 @@ const AuthForms: React.FC<AuthFormsProps> = ({ onSuccess, defaultView = 'signup'
                     )}
                     
                     <div>
-                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Email</label>
-                        <input 
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                            {view === 'login' ? 'Email or Username' : 'Email'}
+                        </label>
+                        <input
                             required
-                            type="email"
+                            type={view === 'login' ? 'text' : 'email'}
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none font-medium text-slate-900 placeholder:text-slate-400"
-                            placeholder="you@example.com"
+                            placeholder={view === 'login' ? 'you@example.com or username' : 'you@example.com'}
                         />
                     </div>
                     

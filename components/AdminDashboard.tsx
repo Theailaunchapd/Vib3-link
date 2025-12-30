@@ -14,17 +14,24 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<'all' | 'active' | 'trial' | 'expired' | 'skool'>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadUsers();
+    loadPromoCodes();
   }, []);
 
   const loadUsers = () => {
     const allUsers = db_getAllUsers();
     setUsers(allUsers);
+  };
+
+  const loadPromoCodes = () => {
+    const codes = db_getAllPromoCodes();
+    setPromoCodes(codes);
   };
 
   const handleDelete = (userId: string) => {
@@ -312,6 +319,133 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </tbody>
               </table>
           </div>
+      </>
+      ) : (
+        <>
+          {/* Promo Codes Tab */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex justify-between items-center mb-6">
+                  <div>
+                      <h2 className="text-xl font-bold text-slate-900">Promo Codes</h2>
+                      <p className="text-sm text-slate-500 mt-1">Create and manage promotional access codes</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowPromoForm(!showPromoForm)}
+                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                  >
+                      {showPromoForm ? <X size={16}/> : <Plus size={16}/>}
+                      {showPromoForm ? 'Cancel' : 'Create Code'}
+                  </button>
+              </div>
+
+              {showPromoForm && (
+                  <form onSubmit={handleCreatePromo} className="bg-slate-50 rounded-xl p-6 mb-6 border border-slate-200 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Code</label>
+                              <input 
+                                  required
+                                  value={promoFormData.code}
+                                  onChange={e => setPromoFormData({...promoFormData, code: e.target.value.toUpperCase()})}
+                                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-mono uppercase"
+                                  placeholder="SUMMER2024"
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Type</label>
+                              <select 
+                                  value={promoFormData.type}
+                                  onChange={e => setPromoFormData({...promoFormData, type: e.target.value as PromoCode['type']})}
+                                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                              >
+                                  <option value="lifetime">Lifetime Access</option>
+                                  <option value="free_month">Free Month</option>
+                                  <option value="trial_extension">Trial Extension (30 days)</option>
+                              </select>
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Description</label>
+                          <input 
+                              required
+                              value={promoFormData.description}
+                              onChange={e => setPromoFormData({...promoFormData, description: e.target.value})}
+                              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                              placeholder="For VIP members"
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Usage Limit (Optional)</label>
+                          <input 
+                              type="number"
+                              value={promoFormData.usageLimit}
+                              onChange={e => setPromoFormData({...promoFormData, usageLimit: e.target.value})}
+                              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                              placeholder="Leave empty for unlimited"
+                              min="1"
+                          />
+                      </div>
+                      <button 
+                        type="submit"
+                        className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700"
+                      >
+                          Create Promo Code
+                      </button>
+                  </form>
+              )}
+
+              {promoCodes.length > 0 ? (
+                  <div className="space-y-3">
+                      {promoCodes.map(promo => (
+                          <div key={promo.id} className={`border rounded-xl p-4 ${promo.active ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-300 opacity-60'}`}>
+                              <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                          <span className="font-mono font-bold text-lg text-slate-900">{promo.code}</span>
+                                          <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                              promo.type === 'lifetime' ? 'bg-purple-100 text-purple-700' :
+                                              promo.type === 'free_month' ? 'bg-blue-100 text-blue-700' :
+                                              'bg-orange-100 text-orange-700'
+                                          }`}>
+                                              {promo.type === 'lifetime' ? 'Lifetime' : promo.type === 'free_month' ? 'Free Month' : 'Trial Extension'}
+                                          </span>
+                                          {!promo.active && <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">Inactive</span>}
+                                      </div>
+                                      <p className="text-sm text-slate-600 mb-2">{promo.description}</p>
+                                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                                          <span>Used: <strong>{promo.usedCount}</strong>{promo.usageLimit ? ` / ${promo.usageLimit}` : ' (unlimited)'}</span>
+                                          <span>Created: {new Date(promo.createdAt).toLocaleDateString()}</span>
+                                      </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                      <button 
+                                        onClick={() => handleTogglePromoActive(promo)}
+                                        className={`p-2 rounded-lg transition-colors ${promo.active ? 'text-slate-400 hover:bg-orange-50 hover:text-orange-600' : 'text-slate-400 hover:bg-green-50 hover:text-green-600'}`}
+                                        title={promo.active ? 'Deactivate' : 'Activate'}
+                                      >
+                                          <Edit2 size={18}/>
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeletePromo(promo.id)}
+                                        className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                                        title="Delete"
+                                      >
+                                          <Trash2 size={18}/>
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                  <div className="text-center py-12 text-slate-500">
+                      <Tag size={48} className="mx-auto mb-4 opacity-20"/>
+                      <p>No promo codes yet. Create one to get started!</p>
+                  </div>
+              )}
+          </div>
+        </>
+      )}
       </div>
 
       {/* User Management Modal */}

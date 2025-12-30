@@ -50,6 +50,18 @@ export interface ConsultationConfig {
   cardColor: string; // Hex color for the booking card
 }
 
+export interface PromoCode {
+  id: string;
+  code: string; // The actual code users enter
+  description: string; // What the code is for
+  type: 'lifetime' | 'trial_extension' | 'free_month'; // Type of access granted
+  usageLimit?: number; // Max uses (undefined = unlimited)
+  usedCount: number; // Times used
+  createdAt: string;
+  createdBy: string; // Admin who created it
+  active: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -57,9 +69,10 @@ export interface User {
   username: string;
   
   // Subscription Fields
-  subscriptionStatus: 'trial' | 'active' | 'expired' | 'skool_member';
+  subscriptionStatus: 'trial' | 'active' | 'expired' | 'skool_member' | 'promo_access';
   trialEndsAt?: string; // ISO Date
   isVib3Skool?: boolean;
+  promoCodeUsed?: string; // The promo code they used
   createdAt?: string; // Signup timestamp
 }
 

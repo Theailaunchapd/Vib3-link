@@ -2,12 +2,13 @@
 
 
 
-import { UserProfile, AnalyticsData, ContentItem, User } from '../types';
+import { UserProfile, AnalyticsData, ContentItem, User, PromoCode } from '../types';
 
 // Storage Keys
 const USERS_TABLE_KEY = 'vib3_users'; // Array of Users
 const PROFILES_TABLE_KEY = 'vib3_profiles'; // Object: { [username]: UserProfile }
 const ANALYTICS_TABLE_KEY = 'vib3_analytics'; // Object: { [username]: AnalyticsData }
+const PROMO_CODES_KEY = 'vib3_promo_codes'; // Array of PromoCodes
 
 // Helpers
 const getDB = (key: string) => {
@@ -297,4 +298,58 @@ export const trackRevenue = (username: string, amount: number) => {
   const data = db_getAnalytics(username);
   data.totalRevenue = (data.totalRevenue || 0) + amount;
   db_saveAnalytics(username, data);
+};
+
+// --- Promo Code Management ---
+
+export const db_getAllPromoCodes = (): PromoCode[] => {
+  return getDB(PROMO_CODES_KEY) || [];
+};
+
+export const db_savePromoCode = (promoCode: PromoCode) => {
+  let codes = db_getAllPromoCodes();
+  codes.push(promoCode);
+  saveDB(PROMO_CODES_KEY, codes);
+};
+
+export const db_updatePromoCode = (promoCode: PromoCode) => {
+  let codes = db_getAllPromoCodes();
+  const index = codes.findIndex((c: PromoCode) => c.id === promoCode.id);
+  if (index !== -1) {
+    codes[index] = promoCode;
+    saveDB(PROMO_CODES_KEY, codes);
+  }
+};
+
+export const db_deletePromoCode = (codeId: string) => {
+  let codes = db_getAllPromoCodes();
+  codes = codes.filter((c: PromoCode) => c.id !== codeId);
+  saveDB(PROMO_CODES_KEY, codes);
+};
+
+export const db_getPromoCodeByCode = (code: string): PromoCode | undefined => {
+  const codes = db_getAllPromoCodes();
+  return codes.find((c: PromoCode) => c.code.toLowerCase() === code.toLowerCase());
+};
+
+export const db_validateAndUsePromoCode = (code: string): { valid: boolean; promoCode?: PromoCode; error?: string } => {
+  const promoCode = db_getPromoCodeByCode(code);
+  
+  if (!promoCode) {
+    return { valid: false, error: 'Invalid promo code' };
+  }
+  
+  if (!promoCode.active) {
+    return { valid: false, error: 'This promo code is no longer active' };
+  }
+  
+  if (promoCode.usageLimit !== undefined && promoCode.usedCount >= promoCode.usageLimit) {
+    return { valid: false, error: 'This promo code has reached its usage limit' };
+  }
+  
+  // Increment usage count
+  promoCode.usedCount += 1;
+  db_updatePromoCode(promoCode);
+  
+  return { valid: true, promoCode };
 };

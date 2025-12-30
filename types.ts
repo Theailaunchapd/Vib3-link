@@ -89,6 +89,19 @@ export interface StripeConfig {
   connectedAt?: string; // ISO Date
 }
 
+export interface StripePayment {
+  id: string;
+  username: string;
+  email: string;
+  paymentType: 'subscription' | 'product' | 'consultation';
+  productName?: string;
+  amount: number;
+  status: 'success' | 'pending' | 'failed' | 'refunded';
+  stripePaymentId?: string;
+  errorMessage?: string;
+  createdAt: string;
+}
+
 export interface UserProfile {
   userId: string; // Link to User
   username: string; // Unique handle for the URL

@@ -2,13 +2,14 @@
 
 
 
-import { UserProfile, AnalyticsData, ContentItem, User, PromoCode } from '../types';
+import { UserProfile, AnalyticsData, ContentItem, User, PromoCode, StripePayment } from '../types';
 
 // Storage Keys
 const USERS_TABLE_KEY = 'vib3_users'; // Array of Users
 const PROFILES_TABLE_KEY = 'vib3_profiles'; // Object: { [username]: UserProfile }
 const ANALYTICS_TABLE_KEY = 'vib3_analytics'; // Object: { [username]: AnalyticsData }
 const PROMO_CODES_KEY = 'vib3_promo_codes'; // Array of PromoCodes
+const PAYMENTS_KEY = 'vib3_payments'; // Array of StripePayments
 
 // Helpers
 const getDB = (key: string) => {
@@ -409,22 +410,83 @@ export const db_validateAndUsePromoCode = (code: string): { valid: boolean; prom
   return { valid: true, promoCode };
 };
 
-// Seed default promo codes
-export const db_seedDefaultPromoCodes = () => {
-  // Check if vib3idea code already exists
-  const existing = db_getPromoCodeByCode('vib3idea');
-  if (!existing) {
-    const defaultPromo: PromoCode = {
-      id: 'promo_default_vib3idea',
-      code: 'VIB3IDEA',
-      description: 'Default promo code for Vib3 Idea community',
-      type: 'lifetime',
-      usageLimit: undefined,
-      usedCount: 0,
-      createdAt: new Date().toISOString(),
-      createdBy: 'system',
-      active: true
-    };
-    db_savePromoCode(defaultPromo);
-  }
+// --- Payment Management ---
+
+export const db_getAllPayments = (): StripePayment[] => {
+  return getDB(PAYMENTS_KEY) || [];
+};
+
+export const db_savePayment = (payment: StripePayment) => {
+  let payments = db_getAllPayments();
+  payments.push(payment);
+  saveDB(PAYMENTS_KEY, payments);
+};
+
+export const db_seedTestPayments = () => {
+  const existing = db_getAllPayments();
+  if (existing.length > 5) return;
+
+  const testPayments: StripePayment[] = [
+    {
+      id: 'pay_1',
+      username: 'sarah_design',
+      email: 'sarah@example.com',
+      paymentType: 'subscription',
+      productName: 'Monthly Subscription',
+      amount: 15,
+      status: 'success',
+      stripePaymentId: 'pi_abc123456',
+      createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+    },
+    {
+      id: 'pay_2',
+      username: 'mike_codes',
+      email: 'mike@example.com',
+      paymentType: 'product',
+      productName: 'Ultimate 3D Texture Pack',
+      amount: 29,
+      status: 'success',
+      stripePaymentId: 'pi_def789012',
+      createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+    },
+    {
+      id: 'pay_3',
+      username: 'jess_fitness',
+      email: 'jess@vib3skool.com',
+      paymentType: 'consultation',
+      productName: 'Portfolio Review',
+      amount: 100,
+      status: 'success',
+      stripePaymentId: 'pi_ghi345678',
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+    },
+    {
+      id: 'pay_4',
+      username: 'expired_tom',
+      email: 'tom@example.com',
+      paymentType: 'subscription',
+      productName: 'Monthly Subscription',
+      amount: 15,
+      status: 'failed',
+      errorMessage: 'Card declined',
+      createdAt: new Date(Date.now() - 86400000 * 1).toISOString()
+    },
+    {
+      id: 'pay_5',
+      username: 'new_trial_user',
+      email: 'trial@example.com',
+      paymentType: 'product',
+      productName: 'Procreate Brush Set',
+      amount: 15,
+      status: 'pending',
+      stripePaymentId: 'pi_jkl901234',
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  testPayments.forEach(p => {
+    if (!db_getAllPayments().find(existing => existing.id === p.id)) {
+      db_savePayment(p);
+    }
+  });
 };

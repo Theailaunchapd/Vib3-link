@@ -397,7 +397,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </table>
           </div>
       </>
-      ) : (
+      ) : activeTab === 'promos' ? (
         <>
           {/* Promo Codes Tab */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">

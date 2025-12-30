@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { User } from '../types';
-import { db_getAllUsers, db_deleteUser, db_seedTestUsers, db_updateUser } from '../services/storage';
+import { User, PromoCode } from '../types';
+import { db_getAllUsers, db_deleteUser, db_seedTestUsers, db_updateUser, db_getAllPromoCodes, db_savePromoCode, db_updatePromoCode, db_deletePromoCode } from '../services/storage';
 import {
   Users, DollarSign, Clock, ShieldCheck, GraduationCap,
   Trash2, Search, Filter, LogOut, TrendingUp, Calendar,
-  Ban, PlayCircle, CheckCircle, XCircle, UserX, Settings
+  Ban, PlayCircle, CheckCircle, XCircle, UserX, Settings,
+  X, Plus, Tag, Edit2
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -18,6 +19,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<'all' | 'active' | 'trial' | 'expired' | 'skool'>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showPromoForm, setShowPromoForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'users' | 'promos'>('users');
+  const [promoFormData, setPromoFormData] = useState({
+    code: '',
+    description: '',
+    type: 'lifetime' as PromoCode['type'],
+    usageLimit: undefined as number | undefined
+  });
 
   useEffect(() => {
     loadUsers();
@@ -76,6 +85,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const handleSeed = () => {
     db_seedTestUsers();
     loadUsers();
+  };
+
+  const handleCreatePromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newPromo: PromoCode = {
+      id: 'promo_' + Date.now(),
+      code: promoFormData.code.toUpperCase(),
+      description: promoFormData.description,
+      type: promoFormData.type,
+      usageLimit: promoFormData.usageLimit,
+      usedCount: 0,
+      createdAt: new Date().toISOString(),
+      createdBy: 'admin',
+      active: true
+    };
+    db_savePromoCode(newPromo);
+    loadPromoCodes();
+    setShowPromoForm(false);
+    setPromoFormData({ code: '', description: '', type: 'lifetime', usageLimit: undefined });
+  };
+
+  const handleTogglePromoActive = (promo: PromoCode) => {
+    promo.active = !promo.active;
+    db_updatePromoCode(promo);
+    loadPromoCodes();
+  };
+
+  const handleDeletePromo = (promoId: string) => {
+    if (confirm("Are you sure you want to delete this promo code?")) {
+      db_deletePromoCode(promoId);
+      loadPromoCodes();
+    }
   };
 
   const getDaysRemaining = (user: User): number | null => {
@@ -211,6 +252,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </div>
           </div>
 
+          {/* Tab Navigation */}
+          <div className="flex gap-2 border-b border-gray-200 pb-4">
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'users' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-slate-600 hover:bg-gray-200'}`}
+            >
+              <Users size={16} className="inline mr-2" />
+              Users
+            </button>
+            <button
+              onClick={() => setActiveTab('promos')}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'promos' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-slate-600 hover:bg-gray-200'}`}
+            >
+              <Tag size={16} className="inline mr-2" />
+              Promo Codes
+            </button>
+          </div>
+
+          {activeTab === 'users' ? (
+          <>
           {/* Filters & Search */}
           <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="relative w-full md:w-96">

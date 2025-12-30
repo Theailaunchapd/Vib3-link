@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, PromoCode } from '../types';
-import { db_getAllUsers, db_deleteUser, db_seedTestUsers, db_updateUser, db_getAllPromoCodes, db_savePromoCode, db_updatePromoCode, db_deletePromoCode } from '../services/storage';
+import { User, PromoCode, StripePayment } from '../types';
+import { db_getAllUsers, db_deleteUser, db_seedTestUsers, db_updateUser, db_getAllPromoCodes, db_savePromoCode, db_updatePromoCode, db_deletePromoCode, db_getAllPayments, db_seedTestPayments } from '../services/storage';
 import {
   Users, DollarSign, Clock, ShieldCheck, GraduationCap,
   Trash2, Search, Filter, LogOut, TrendingUp, Calendar,
   Ban, PlayCircle, CheckCircle, XCircle, UserX, Settings,
-  X, Plus, Tag, Edit2
+  X, Plus, Tag, Edit2, CreditCard
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -16,11 +16,12 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+  const [payments, setPayments] = useState<StripePayment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<'all' | 'active' | 'trial' | 'expired' | 'skool'>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showPromoForm, setShowPromoForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'promos'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'promos' | 'payments'>('users');
   const [promoFormData, setPromoFormData] = useState({
     code: '',
     description: '',
@@ -31,6 +32,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   useEffect(() => {
     loadUsers();
     loadPromoCodes();
+    loadPayments();
   }, []);
 
   const loadUsers = () => {
@@ -41,6 +43,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const loadPromoCodes = () => {
     const codes = db_getAllPromoCodes();
     setPromoCodes(codes);
+  };
+
+  const loadPayments = () => {
+    const allPayments = db_getAllPayments();
+    setPayments(allPayments);
   };
 
   const handleDelete = (userId: string) => {
@@ -84,7 +91,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   const handleSeed = () => {
     db_seedTestUsers();
+    db_seedTestPayments();
     loadUsers();
+    loadPayments();
   };
 
   const handleCreatePromo = (e: React.FormEvent) => {
@@ -267,6 +276,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             >
               <Tag size={16} className="inline mr-2" />
               Promo Codes
+            </button>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'payments' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-slate-600 hover:bg-gray-200'}`}
+            >
+              <CreditCard size={16} className="inline mr-2" />
+              Stripe Payments
             </button>
           </div>
 
@@ -506,7 +522,134 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               )}
           </div>
         </>
-      )}
+      ) : activeTab === 'payments' ? (
+        <>
+          {/* Stripe Payments Tab */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <CreditCard size={24} className="text-green-600"/>
+                  Stripe Payment History
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">Track all payment transactions and their status</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-green-600">
+                  ${payments.filter(p => p.status === 'success').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                </div>
+                <div className="text-xs text-slate-500 font-medium">Total Revenue</div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">User</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Product/Service</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Stripe ID</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {payments.length > 0 ? (
+                    payments.map(payment => (
+                      <tr key={payment.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 text-sm">
+                          <div className="font-medium text-slate-900">
+                            {new Date(payment.createdAt).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {new Date(payment.createdAt).toLocaleTimeString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-900">{payment.username}</div>
+                          <div className="text-xs text-slate-500">{payment.email}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-blue-100 text-blue-800">
+                            {payment.paymentType}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-700">
+                          {payment.productName || 'Monthly Subscription'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-lg font-bold text-slate-900">
+                            ${payment.amount.toFixed(2)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-start gap-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize
+                              ${payment.status === 'success' ? 'bg-green-100 text-green-800' : 
+                                payment.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                payment.status === 'refunded' ? 'bg-orange-100 text-orange-800' :
+                                'bg-yellow-100 text-yellow-800'}`}>
+                              {payment.status === 'success' && <CheckCircle size={12} className="mr-1"/>}
+                              {payment.status === 'failed' && <XCircle size={12} className="mr-1"/>}
+                              {payment.status}
+                            </span>
+                          </div>
+                          {payment.errorMessage && (
+                            <div className="text-xs text-red-600 mt-1">{payment.errorMessage}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-xs font-mono text-slate-500">
+                          {payment.stripePaymentId || '—'}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                        <CreditCard size={48} className="mx-auto mb-4 opacity-20"/>
+                        <p className="font-medium">No payment records yet</p>
+                        <p className="text-sm mt-1">Click "Seed Test Data" to generate sample payments</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Payment Stats Footer */}
+            {payments.length > 0 && (
+              <div className="px-6 py-4 bg-slate-50 border-t border-gray-200 grid grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {payments.filter(p => p.status === 'success').length}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium uppercase">Successful</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {payments.filter(p => p.status === 'failed').length}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium uppercase">Failed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {payments.filter(p => p.status === 'pending').length}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium uppercase">Pending</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {payments.filter(p => p.status === 'refunded').length}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium uppercase">Refunded</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      ) : null}
       </div>
 
       {/* User Management Modal */}

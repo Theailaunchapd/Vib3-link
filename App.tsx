@@ -11,13 +11,14 @@ import LandingPage from './components/LandingPage';
 import AuthForms from './components/AuthForms';
 import SubscriptionGate from './components/SubscriptionGate';
 import AdminDashboard from './components/AdminDashboard';
+import AdminLogin from './components/AdminLogin';
 import { db_saveProfile, db_getProfileByUsername, createDemoProfile } from './services/storage';
-import { auth_getCurrentUser } from './services/auth';
+import { auth_getCurrentUser, auth_isAdmin, auth_adminLogout } from './services/auth';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 const App: React.FC = () => {
   // State for Application Routing
-  const [view, setView] = useState<'landing' | 'auth_login' | 'auth_signup' | 'editor' | 'dashboard' | 'public_profile' | 'admin'>('landing');
+  const [view, setView] = useState<'landing' | 'auth_login' | 'auth_signup' | 'editor' | 'dashboard' | 'public_profile' | 'admin_login' | 'admin'>('landing');
   const [loading, setLoading] = useState(true);
 
   // User Data
@@ -115,21 +116,38 @@ const App: React.FC = () => {
   // 2. Landing Page
   if (view === 'landing') {
       return (
-        <LandingPage 
-            onGetStarted={() => setView('auth_signup')} 
+        <LandingPage
+            onGetStarted={() => setView('auth_signup')}
             onLogin={() => setView('auth_login')}
             onDemo={handleEnterDemo}
-            onAdmin={() => setView('admin')}
+            onAdmin={() => setView('admin_login')}
         />
       );
   }
 
-  // 3. Admin Dashboard
-  if (view === 'admin') {
-      return <AdminDashboard onLogout={() => setView('landing')} />;
+  // 3. Admin Login
+  if (view === 'admin_login') {
+      return (
+        <AdminLogin
+          onSuccess={() => setView('admin')}
+          onBack={() => setView('landing')}
+        />
+      );
   }
 
-  // 4. Auth Screens
+  // 4. Admin Dashboard (Protected)
+  if (view === 'admin') {
+      if (!auth_isAdmin()) {
+          setView('admin_login');
+          return null;
+      }
+      return <AdminDashboard onLogout={() => {
+          auth_adminLogout();
+          setView('landing');
+      }} />;
+  }
+
+  // 5. Auth Screens
   if (view === 'auth_login' || view === 'auth_signup') {
       return (
           <AuthForms 
@@ -144,7 +162,7 @@ const App: React.FC = () => {
       );
   }
 
-  // 5. Dashboard (Analytics & Inventory)
+  // 6. Dashboard (Analytics & Inventory)
   if (view === 'dashboard' && profile) {
     if (currentUser && currentUser.subscriptionStatus === 'expired' && !currentUser.isVib3Skool) {
        return <SubscriptionGate user={currentUser} onSuccess={refreshSession} />;
@@ -152,7 +170,7 @@ const App: React.FC = () => {
     return <Dashboard profile={profile} setProfile={setProfile as any} onBack={() => setView('editor')} />;
   }
 
-  // 6. Editor (Protected)
+  // 7. Editor (Protected)
   if (view === 'editor' && profile) {
     // Check Subscription
     if (currentUser && currentUser.subscriptionStatus === 'expired' && !currentUser.isVib3Skool) {

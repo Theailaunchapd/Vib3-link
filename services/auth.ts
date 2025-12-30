@@ -4,6 +4,11 @@ import { User, UserProfile } from '../types';
 import { db_getUserByEmail, db_getUserByUsername, db_saveUser, db_updateUser, db_saveProfile, createDefaultProfile, db_getProfileByUsername } from './storage';
 
 const SESSION_KEY = 'vib3_session'; // Stores userId
+const ADMIN_SESSION_KEY = 'vib3_admin_session'; // Admin session
+const ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: 'vib3admin2025' // Change this in production!
+};
 
 export const auth_getCurrentUser = (): { user: User, profile: UserProfile } | null => {
     const sessionUserId = localStorage.getItem(SESSION_KEY);
@@ -165,4 +170,27 @@ export const auth_subscribeUser = (userId: string): Promise<void> => {
 export const auth_logout = () => {
     localStorage.removeItem(SESSION_KEY);
     window.location.reload(); // Hard reload to clear state
+};
+
+// --- Admin Authentication ---
+
+export const auth_isAdmin = (): boolean => {
+    return localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+};
+
+export const auth_adminLogin = (username: string, password: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                localStorage.setItem(ADMIN_SESSION_KEY, 'true');
+                resolve("Admin login successful");
+            } else {
+                reject("Invalid admin credentials");
+            }
+        }, 500);
+    });
+};
+
+export const auth_adminLogout = () => {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
 };

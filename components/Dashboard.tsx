@@ -1,14 +1,14 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { UserProfile, AnalyticsData, Product, ContentItem } from '../types';
+import { UserProfile, AnalyticsData, Product, ContentItem, StripeConfig } from '../types';
 import { generateAnalyticsInsights } from '../services/geminiService';
 import { db_getAnalytics } from '../services/storage';
 import { auth_logout } from '../services/auth';
-import { 
-  ArrowLeft, BarChart3, TrendingUp, Users, 
+import {
+  ArrowLeft, BarChart3, TrendingUp, Users,
   DollarSign, MousePointer2, Smartphone, Globe, Activity,
-  BrainCircuit, Loader2, AlertCircle, ShoppingBag, Plus, Edit2, Trash2, Save, X, Image as ImageIcon, Layers, Link as LinkIcon, ExternalLink, Power, Eye, GraduationCap, LogOut
+  BrainCircuit, Loader2, AlertCircle, ShoppingBag, Plus, Edit2, Trash2, Save, X, Image as ImageIcon, Layers, Link as LinkIcon, ExternalLink, Power, Eye, GraduationCap, LogOut, Settings, CreditCard, CheckCircle2
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 
@@ -19,13 +19,20 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ profile, setProfile, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'links' | 'store'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'links' | 'store' | 'settings'>('overview');
   const [insight, setInsight] = useState<string | null>(null);
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [stats, setStats] = useState<AnalyticsData | null>(null);
 
   // Store Management State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Stripe Settings State
+  const [stripeForm, setStripeForm] = useState<StripeConfig>({
+    storeName: profile.stripeConfig?.storeName || '',
+    publishableKey: profile.stripeConfig?.publishableKey || '',
+    secretKey: profile.stripeConfig?.secretKey || '',
+  });
   
   // Check for Skool membership via localStorage user session
   const sessionUser = localStorage.getItem('vib3_session');
@@ -153,6 +160,39 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, setProfile, onBack }) =>
        setEditingProduct(null);
   };
 
+  // --- Stripe Configuration Functions ---
+  const handleSaveStripeConfig = () => {
+    if (!stripeForm.storeName || !stripeForm.publishableKey || !stripeForm.secretKey) {
+      alert('Please fill in all Stripe fields');
+      return;
+    }
+
+    setProfile(prev => ({
+      ...prev,
+      stripeConnected: true,
+      stripeConfig: {
+        ...stripeForm,
+        connectedAt: prev.stripeConfig?.connectedAt || new Date().toISOString()
+      }
+    }));
+    alert('Stripe configuration saved successfully!');
+  };
+
+  const handleDisconnectStripe = () => {
+    if (confirm('Are you sure you want to disconnect your Stripe account?')) {
+      setProfile(prev => ({
+        ...prev,
+        stripeConnected: false,
+        stripeConfig: undefined
+      }));
+      setStripeForm({
+        storeName: '',
+        publishableKey: '',
+        secretKey: ''
+      });
+    }
+  };
+
   const linkBlocks = profile.content.filter(b => b.type === 'link');
   const productBlocks = profile.content.filter(b => b.type === 'product') as Product[];
 
@@ -184,26 +224,32 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, setProfile, onBack }) =>
                 </div>
             </div>
             <div className="flex gap-2">
-                 <button 
+                 <button
                     onClick={() => setActiveTab('overview')}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'overview' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-gray-100'}`}
                  >
                      Overview
                  </button>
-                 <button 
+                 <button
                     onClick={() => setActiveTab('links')}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'links' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-gray-100'}`}
                  >
                      Links
                  </button>
-                 <button 
+                 <button
                     onClick={() => setActiveTab('store')}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'store' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-gray-100'}`}
                  >
                      Inventory
                  </button>
+                 <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'settings' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-gray-100'}`}
+                 >
+                     Settings
+                 </button>
                  <div className="w-px bg-gray-200 mx-1 my-2"></div>
-                 <button 
+                 <button
                     onClick={auth_logout}
                     className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
                     title="Sign Out"
@@ -497,7 +543,7 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, setProfile, onBack }) =>
                           <h2 className="text-2xl font-bold text-slate-900">Store Inventory</h2>
                           <p className="text-slate-500">Manage products, images, and variations.</p>
                       </div>
-                      <button 
+                      <button
                           onClick={handleAddProduct}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors shadow-lg shadow-green-200"
                       >
@@ -551,16 +597,16 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, setProfile, onBack }) =>
                                       </td>
                                       <td className="px-6 py-4 text-right">
                                           <div className="flex justify-end gap-2">
-                                              <button 
-                                                onClick={() => setEditingProduct(product)} 
-                                                className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors" 
+                                              <button
+                                                onClick={() => setEditingProduct(product)}
+                                                className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors"
                                                 title="Edit Details & Images"
                                               >
                                                   <Edit2 size={18}/>
                                               </button>
-                                              <button 
-                                                onClick={() => handleDeleteProduct(product.id)} 
-                                                className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition-colors" 
+                                              <button
+                                                onClick={() => handleDeleteProduct(product.id)}
+                                                className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition-colors"
                                                 title="Delete"
                                               >
                                                   <Trash2 size={18}/>
@@ -582,6 +628,151 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, setProfile, onBack }) =>
                               )}
                           </tbody>
                       </table>
+                  </div>
+              </div>
+          )}
+
+          {/* --- SETTINGS TAB --- */}
+          {activeTab === 'settings' && (
+              <div className="space-y-6 animate-fade-in">
+                  <div>
+                      <h2 className="text-2xl font-bold text-slate-900">Settings</h2>
+                      <p className="text-slate-500">Configure integrations and account settings.</p>
+                  </div>
+
+                  {/* Stripe Integration Section */}
+                  <div className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                      <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+                          <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                  <div className="p-3 bg-purple-600 rounded-lg">
+                                      <CreditCard size={24} className="text-white"/>
+                                  </div>
+                                  <div>
+                                      <h3 className="font-bold text-lg text-slate-900">Stripe Integration</h3>
+                                      <p className="text-sm text-slate-600">Connect your Stripe account to accept payments</p>
+                                  </div>
+                              </div>
+                              {profile.stripeConnected && (
+                                  <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg">
+                                      <CheckCircle2 size={16}/>
+                                      <span className="text-sm font-semibold">Connected</span>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+
+                      <div className="p-6 space-y-6">
+                          {profile.stripeConnected && profile.stripeConfig ? (
+                              // Connected State - Show Configuration
+                              <>
+                                  <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                                      <div className="flex items-start gap-3">
+                                          <CheckCircle2 size={20} className="text-green-600 mt-0.5"/>
+                                          <div className="flex-1">
+                                              <p className="font-semibold text-green-900">Your Stripe account is connected!</p>
+                                              <p className="text-sm text-green-700 mt-1">
+                                                  Connected on {new Date(profile.stripeConfig.connectedAt || '').toLocaleDateString()}
+                                              </p>
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-4">
+                                      <div>
+                                          <label className="block text-sm font-semibold text-slate-700 mb-2">Store Name</label>
+                                          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-slate-900">
+                                              {profile.stripeConfig.storeName}
+                                          </div>
+                                      </div>
+
+                                      <div>
+                                          <label className="block text-sm font-semibold text-slate-700 mb-2">Publishable Key</label>
+                                          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-slate-600">
+                                              {profile.stripeConfig.publishableKey.substring(0, 20)}...
+                                          </div>
+                                      </div>
+
+                                      <div>
+                                          <label className="block text-sm font-semibold text-slate-700 mb-2">Secret Key</label>
+                                          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-slate-600">
+                                              ••••••••••••••••••••
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <button
+                                      onClick={handleDisconnectStripe}
+                                      className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+                                  >
+                                      Disconnect Stripe Account
+                                  </button>
+                              </>
+                          ) : (
+                              // Not Connected State - Show Input Form
+                              <>
+                                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                                      <p className="text-sm text-blue-900">
+                                          Connect your Stripe account to start accepting payments for your products and consultations. You can find your API keys in your Stripe Dashboard.
+                                      </p>
+                                  </div>
+
+                                  <div className="space-y-4">
+                                      <div>
+                                          <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                              Store Name
+                                              <span className="text-red-500 ml-1">*</span>
+                                          </label>
+                                          <input
+                                              type="text"
+                                              value={stripeForm.storeName}
+                                              onChange={(e) => setStripeForm(prev => ({ ...prev, storeName: e.target.value }))}
+                                              placeholder="My Awesome Store"
+                                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+                                          />
+                                      </div>
+
+                                      <div>
+                                          <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                              Publishable Key
+                                              <span className="text-red-500 ml-1">*</span>
+                                          </label>
+                                          <input
+                                              type="text"
+                                              value={stripeForm.publishableKey}
+                                              onChange={(e) => setStripeForm(prev => ({ ...prev, publishableKey: e.target.value }))}
+                                              placeholder="pk_test_..."
+                                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none font-mono text-sm transition-all"
+                                          />
+                                          <p className="text-xs text-slate-500 mt-1">Found in Stripe Dashboard → Developers → API Keys</p>
+                                      </div>
+
+                                      <div>
+                                          <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                              Secret Key
+                                              <span className="text-red-500 ml-1">*</span>
+                                          </label>
+                                          <input
+                                              type="password"
+                                              value={stripeForm.secretKey}
+                                              onChange={(e) => setStripeForm(prev => ({ ...prev, secretKey: e.target.value }))}
+                                              placeholder="sk_test_..."
+                                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none font-mono text-sm transition-all"
+                                          />
+                                          <p className="text-xs text-slate-500 mt-1">Keep this secret and never share it publicly</p>
+                                      </div>
+                                  </div>
+
+                                  <button
+                                      onClick={handleSaveStripeConfig}
+                                      className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                                  >
+                                      <CreditCard size={18}/>
+                                      Connect Stripe Account
+                                  </button>
+                              </>
+                          )}
+                      </div>
                   </div>
               </div>
           )}

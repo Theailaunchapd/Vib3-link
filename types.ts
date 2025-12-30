@@ -76,6 +76,13 @@ export interface User {
   createdAt?: string; // Signup timestamp
 }
 
+export interface StripeConfig {
+  storeName: string;
+  publishableKey: string;
+  secretKey: string;
+  connectedAt?: string; // ISO Date
+}
+
 export interface UserProfile {
   userId: string; // Link to User
   username: string; // Unique handle for the URL
@@ -87,15 +94,16 @@ export interface UserProfile {
   backgroundType: 'color' | 'image' | 'video';
   backgroundColor: string;
   theme: 'modern' | 'retro' | 'glass';
-  
+
   // Unified Content List
   content: ContentItem[];
-  
+
   // Settings that apply globally to the feature, not just the block
-  consultation: ConsultationConfig; 
-  
+  consultation: ConsultationConfig;
+
   voiceWelcomeUrl?: string; // URL for TTS generated welcome
   stripeConnected: boolean;
+  stripeConfig?: StripeConfig; // Stripe integration settings
   layoutOrder?: string[]; // Deprecated but kept for type safety during migration
 }
 

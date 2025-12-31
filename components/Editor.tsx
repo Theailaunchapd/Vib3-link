@@ -439,12 +439,6 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
         >
           <div className="flex items-center justify-center gap-2"><Paintbrush size={16}/> Style</div>
         </button>
-        <button 
-          onClick={() => setActiveTab('ai')}
-          className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'ai' ? 'text-black border-b-2 border-purple-600' : 'text-slate-500 hover:text-black'}`}
-        >
-          <div className="flex items-center justify-center gap-2"><Sparkles size={16}/> AI Studio</div>
-        </button>
       </div>
 
       {/* Scrollable Content Area */}
@@ -1094,67 +1088,6 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
            </div>
         )}
 
-        {/* --- AI STUDIO TAB --- */}
-        {activeTab === 'ai' && (
-            <div className="space-y-6">
-                <div className="bg-gradient-to-br from-indigo-50 to-white p-4 rounded-xl border border-indigo-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <ImageIcon size={20} className="text-indigo-600"/> Generative Assets
-                    </h3>
-                    <div className="space-y-3">
-                         <input 
-                            placeholder="Describe asset or enter text for speech..."
-                            value={prompt}
-                            onChange={e => setPrompt(e.target.value)}
-                            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                         />
-
-                        {/* Voice Selector */}
-                        <div className="flex items-center gap-2 mb-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Voice:</label>
-                            <select 
-                                value={ttsVoice}
-                                onChange={(e) => setTtsVoice(e.target.value)}
-                                className="flex-1 bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
-                            >
-                                <option value="Puck">Puck (Male)</option>
-                                <option value="Charon">Charon (Male)</option>
-                                <option value="Kore">Kore (Female)</option>
-                                <option value="Fenrir">Fenrir (Male)</option>
-                                <option value="Zephyr">Zephyr (Female)</option>
-                            </select>
-                        </div>
-
-                         <div className="grid grid-cols-2 gap-2">
-                             <button 
-                                onClick={handleGenerateAvatar}
-                                disabled={!!loadingAction}
-                                className="bg-gray-100 hover:bg-gray-200 text-slate-700 p-3 rounded-lg text-xs font-medium flex flex-col items-center gap-2 transition-all border border-gray-200"
-                             >
-                                {loadingAction === 'avatar' ? <Loader2 size={20} className="animate-spin text-blue-500"/> : <ImageIcon size={20} className="text-blue-500"/>}
-                                Generate Avatar
-                             </button>
-                             <button 
-                                onClick={handleGenerateVideoBg}
-                                disabled={!!loadingAction}
-                                className="bg-gray-100 hover:bg-gray-200 text-slate-700 p-3 rounded-lg text-xs font-medium flex flex-col items-center gap-2 transition-all border border-gray-200"
-                             >
-                                {loadingAction === 'videobg' ? <Loader2 size={20} className="animate-spin text-pink-500"/> : <Video size={20} className="text-pink-500"/>}
-                                Generate Video
-                             </button>
-                             <button 
-                                onClick={handleGenerateTTS}
-                                disabled={!!loadingAction}
-                                className="col-span-2 bg-gray-100 hover:bg-gray-200 text-slate-700 p-3 rounded-lg text-xs font-medium flex flex-col items-center gap-2 transition-all border border-gray-200"
-                             >
-                                {loadingAction === 'tts' ? <Loader2 size={20} className="animate-spin text-orange-500"/> : <Mic size={20} className="text-orange-500"/>}
-                                Generate Voice Welcome (from Bio/Text)
-                             </button>
-                         </div>
-                    </div>
-                </div>
-            </div>
-        )}
       </div>
 
       {/* Stripe Modal Overlay */}

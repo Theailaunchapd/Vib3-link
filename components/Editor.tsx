@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { UserProfile, AIModel, ContentItem, Product } from '../types';
 import { generateBioWithThinking, generateProfileImage, generateBackgroundVideo, editImageWithPrompt, generateWelcomeSpeech, getTrendingTopics, fileToBase64, generateProductDescription, generateThemeFromDescription } from '../services/geminiService';
+import { generateThemeWithAI } from '../services/openaiService';
 import { db_saveProfile } from '../services/storage';
 import { Wand2, Image as ImageIcon, Video, Mic, Plus, Trash2, Layout, Link as LinkIcon, Edit3, Loader2, Sparkles, AlertCircle, ShoppingBag, CreditCard, X, CheckCircle2, BarChart2, Globe, Copy, ExternalLink, Calendar, MoveUp, MoveDown, ArrowUp, ArrowDown, ChevronsUp, GripVertical, Settings, LogOut, Upload, Paintbrush } from 'lucide-react';
 import ProductForm from './ProductForm';
@@ -288,32 +289,25 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
     setLoadingAction('magicTheme');
     setAiError(null);
     try {
-        if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
-            await (window as any).aistudio.openSelectKey();
-        }
-        // 1. Generate Config
-        const themeConfig = await generateThemeFromDescription(themePrompt);
+        // Use OpenAI to generate theme configuration
+        const themeResult = await generateThemeWithAI(themePrompt);
         
-        // 2. Update Profile with color/theme immediately
+        // Update Profile with the generated theme
         setProfile(p => ({
             ...p,
-            backgroundColor: themeConfig.backgroundColor,
-            theme: themeConfig.theme,
-            backgroundType: 'color' // Temp until image loads
+            backgroundColor: themeResult.backgroundColor,
+            theme: themeResult.theme,
+            backgroundType: themeResult.backgroundType,
+            backgroundUrl: themeResult.backgroundUrl || p.backgroundUrl
         }));
 
-        // 3. Generate Background Image if prompt exists
-        if (themeConfig.backgroundPrompt) {
-            const imageUrl = await generateProfileImage(themeConfig.backgroundPrompt, '1K');
-            setProfile(p => ({
-                ...p,
-                backgroundUrl: imageUrl,
-                backgroundType: 'image'
-            }));
+        // Show success message with reasoning
+        if (themeResult.reasoning) {
+            console.log('AI Theme Reasoning:', themeResult.reasoning);
         }
 
     } catch (e: any) {
-        setAiError(e.message);
+        setAiError(e.message || 'Failed to generate theme');
     } finally {
         setLoadingAction(null);
     }

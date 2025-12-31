@@ -388,6 +388,27 @@ export const db_getPromoCodeByCode = (code: string): PromoCode | undefined => {
   return codes.find((c: PromoCode) => c.code.toLowerCase() === code.toLowerCase());
 };
 
+export const db_seedDefaultPromoCodes = () => {
+  const existing = db_getAllPromoCodes();
+  if (existing.length > 0) return;
+
+  const defaultCodes: PromoCode[] = [
+    {
+      id: 'promo_1',
+      code: 'WELCOME2024',
+      description: 'Welcome discount for new users',
+      type: 'free_month',
+      usageLimit: 100,
+      usedCount: 0,
+      createdAt: new Date().toISOString(),
+      createdBy: 'system',
+      active: true
+    }
+  ];
+
+  defaultCodes.forEach(code => db_savePromoCode(code));
+};
+
 export const db_validateAndUsePromoCode = (code: string): { valid: boolean; promoCode?: PromoCode; error?: string } => {
   const promoCode = db_getPromoCodeByCode(code);
   

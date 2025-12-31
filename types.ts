@@ -112,7 +112,7 @@ export interface UserProfile {
   backgroundUrl: string; // Can be image or video
   backgroundType: 'color' | 'image' | 'video';
   backgroundColor: string;
-  theme: 'modern' | 'retro' | 'glass';
+  theme: 'modern' | 'retro' | 'glass' | 'microsoft90s' | 'apple90s';
 
   // Profile Header Image Settings
   headerHeight?: number; // Height in pixels (default: 300)

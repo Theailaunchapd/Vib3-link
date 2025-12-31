@@ -1031,13 +1031,19 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
               <div className="space-y-4">
                  <label className="text-xs font-semibold text-slate-500 uppercase">Theme Preset</label>
                  <div className="grid grid-cols-3 gap-3">
-                    {['modern', 'retro', 'glass'].map((theme) => (
-                        <button 
-                            key={theme}
-                            onClick={() => setProfile({...profile, theme: theme as any})}
-                            className={`py-3 rounded-lg border text-sm capitalize ${profile.theme === theme ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-50 border-gray-200 text-slate-700 hover:bg-gray-100'}`}
+                    {[
+                      { value: 'modern', label: 'Modern' },
+                      { value: 'retro', label: 'Retro' },
+                      { value: 'glass', label: 'Glass' },
+                      { value: 'microsoft90s', label: 'Microsoft 90s' },
+                      { value: 'apple90s', label: 'Apple 90s' }
+                    ].map((theme) => (
+                        <button
+                            key={theme.value}
+                            onClick={() => setProfile({...profile, theme: theme.value as any})}
+                            className={`py-3 rounded-lg border text-sm ${profile.theme === theme.value ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-50 border-gray-200 text-slate-700 hover:bg-gray-100'}`}
                         >
-                            {theme}
+                            {theme.label}
                         </button>
                     ))}
                  </div>

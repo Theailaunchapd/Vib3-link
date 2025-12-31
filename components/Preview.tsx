@@ -456,7 +456,10 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                 // --- LINK ---
                 if (block.type === 'link') {
                     const link = block as any;
-                    const hasCustomColors = profile.buttonColor || profile.buttonTextColor;
+                    // Check for block-specific colors first, then profile-level colors
+                    const hasCustomColors = link.buttonColor || link.buttonTextColor || profile.buttonColor || profile.buttonTextColor;
+                    const buttonBg = link.buttonColor || profile.buttonColor || '#000000';
+                    const buttonText = link.buttonTextColor || profile.buttonTextColor || '#ffffff';
                     
                     return (
                         <a 
@@ -467,8 +470,8 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                             onClick={() => handleLinkClick(link.id)}
                             className={`block w-full py-4 px-6 text-center font-medium transition-all flex items-center justify-between group ${hasCustomColors ? 'rounded-xl' : buttonClasses[profile.theme]}`}
                             style={hasCustomColors ? {
-                                backgroundColor: profile.buttonColor || '#000000',
-                                color: profile.buttonTextColor || '#ffffff'
+                                backgroundColor: buttonBg,
+                                color: buttonText
                             } : undefined}
                         >
                             <span className="flex-1">{link.title}</span>

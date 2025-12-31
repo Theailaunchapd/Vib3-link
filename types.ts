@@ -5,6 +5,8 @@ export interface LinkItem {
   title: string;
   url: string;
   active: boolean;
+  buttonColor?: string; // Custom button background color
+  buttonTextColor?: string; // Custom button text color
 }
 
 export interface ProductVariationOption {
@@ -48,6 +50,8 @@ export interface ConsultationConfig {
   availability: string[]; // e.g., ["Mon", "Wed", "Fri"]
   slots: string[]; // e.g., ["09:00 AM", "10:00 AM"]
   cardColor: string; // Hex color for the booking card
+  buttonColor?: string; // Custom button background color
+  buttonTextColor?: string; // Custom button text color
 }
 
 export interface PromoCode {

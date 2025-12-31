@@ -29,6 +29,9 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
   
   // Product Deep Edit State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
+  // Block Color Settings State
+  const [editingBlockColors, setEditingBlockColors] = useState<string | null>(null);
 
   // Unified Content Management
   const addLink = () => {
@@ -628,9 +631,15 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                                     <input 
                                         value={block.title}
                                         onChange={e => updateContentBlock(block.id, { title: e.target.value })}
-                                        className="bg-transparent text-slate-900 font-bold focus:outline-none w-full"
+                                        className="bg-transparent text-slate-900 font-bold focus:outline-none flex-1"
                                         placeholder="Link Title"
                                     />
+                                    <button 
+                                      onClick={() => setEditingBlockColors(editingBlockColors === block.id ? null : block.id)}
+                                      className="text-xs text-slate-500 hover:text-blue-500 flex items-center gap-1"
+                                    >
+                                      <Settings size={14}/> Colors
+                                    </button>
                                 </div>
                                 <input 
                                     value={block.url}
@@ -638,6 +647,40 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                                     className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1 text-sm text-slate-600 focus:outline-none"
                                     placeholder="https://"
                                 />
+                                {editingBlockColors === block.id && (
+                                  <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-2 border border-gray-200">
+                                    <div className="flex gap-2 items-center">
+                                      <label className="text-xs font-medium text-slate-700 w-20">Background</label>
+                                      <input 
+                                        type="color" 
+                                        value={block.buttonColor || profile.buttonColor || '#000000'} 
+                                        onChange={e => updateContentBlock(block.id, { buttonColor: e.target.value })} 
+                                        className="w-10 h-8 rounded cursor-pointer border border-gray-300"
+                                      />
+                                      <input 
+                                        type="text" 
+                                        value={block.buttonColor || profile.buttonColor || '#000000'} 
+                                        onChange={e => updateContentBlock(block.id, { buttonColor: e.target.value })} 
+                                        className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs font-mono"
+                                      />
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                      <label className="text-xs font-medium text-slate-700 w-20">Text</label>
+                                      <input 
+                                        type="color" 
+                                        value={block.buttonTextColor || profile.buttonTextColor || '#ffffff'} 
+                                        onChange={e => updateContentBlock(block.id, { buttonTextColor: e.target.value })} 
+                                        className="w-10 h-8 rounded cursor-pointer border border-gray-300"
+                                      />
+                                      <input 
+                                        type="text" 
+                                        value={block.buttonTextColor || profile.buttonTextColor || '#ffffff'} 
+                                        onChange={e => updateContentBlock(block.id, { buttonTextColor: e.target.value })} 
+                                        className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs font-mono"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                             </>
                         )}
 

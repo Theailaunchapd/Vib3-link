@@ -6,7 +6,7 @@ import {
   Users, DollarSign, Clock, ShieldCheck, GraduationCap,
   Trash2, Search, Filter, LogOut, TrendingUp, Calendar,
   Ban, PlayCircle, CheckCircle, XCircle, UserX, Settings,
-  X, Plus, Tag, Edit2, CreditCard
+  X, Plus, Tag, Edit2, CreditCard, Key
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -86,6 +86,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       db_updateUser(user);
       loadUsers();
       setSelectedUser(null);
+    }
+  };
+
+  const handleResetPassword = (user: User) => {
+    const newPassword = prompt(`Enter new password for ${user.username}:`);
+    if (newPassword && newPassword.trim()) {
+      if (confirm(`Reset password for ${user.username}?\n\nNew password: ${newPassword}`)) {
+        user.password = newPassword;
+        db_updateUser(user);
+        loadUsers();
+        alert(`Password reset successfully for ${user.username}!\n\nNew password: ${newPassword}\n\nMake sure to share this with the user securely.`);
+        setSelectedUser(null);
+      }
     }
   };
 
@@ -746,6 +759,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   <Ban size={18}/> Suspend Subscription
                 </button>
               )}
+
+              <button
+                onClick={() => handleResetPassword(selectedUser)}
+                className="w-full py-3 bg-purple-50 text-purple-700 font-bold rounded-lg hover:bg-purple-100 transition-colors flex items-center justify-center gap-2"
+              >
+                <Key size={18}/> Reset Password
+              </button>
 
               <button
                 onClick={() => handleDelete(selectedUser.id)}

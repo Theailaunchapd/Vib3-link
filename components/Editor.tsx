@@ -1071,6 +1071,70 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                   </div>
               </div>
 
+              {/* Quick Color Controls */}
+              <div className="space-y-4">
+                 <label className="text-xs font-semibold text-slate-500 uppercase">Quick Colors</label>
+                 
+                 {/* Background Color */}
+                 <div className="space-y-2">
+                   <label className="text-xs font-medium text-slate-700">Background</label>
+                   <div className="flex gap-2 items-center">
+                     <input 
+                       type="color" 
+                       value={profile.backgroundColor || '#ffffff'} 
+                       onChange={e => setProfile({...profile, backgroundColor: e.target.value, backgroundType: 'color'})} 
+                       className="w-16 h-10 rounded cursor-pointer border border-gray-200"
+                     />
+                     <input 
+                       type="text" 
+                       value={profile.backgroundColor || '#ffffff'} 
+                       onChange={e => setProfile({...profile, backgroundColor: e.target.value, backgroundType: 'color'})} 
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
+                       placeholder="#ffffff"
+                     />
+                   </div>
+                 </div>
+
+                 {/* Button Colors */}
+                 <div className="space-y-2">
+                   <label className="text-xs font-medium text-slate-700">Button Background</label>
+                   <div className="flex gap-2 items-center">
+                     <input 
+                       type="color" 
+                       value={profile.buttonColor || '#000000'} 
+                       onChange={e => setProfile({...profile, buttonColor: e.target.value})} 
+                       className="w-16 h-10 rounded cursor-pointer border border-gray-200"
+                     />
+                     <input 
+                       type="text" 
+                       value={profile.buttonColor || '#000000'} 
+                       onChange={e => setProfile({...profile, buttonColor: e.target.value})} 
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
+                       placeholder="#000000"
+                     />
+                   </div>
+                 </div>
+
+                 <div className="space-y-2">
+                   <label className="text-xs font-medium text-slate-700">Button Text</label>
+                   <div className="flex gap-2 items-center">
+                     <input 
+                       type="color" 
+                       value={profile.buttonTextColor || '#ffffff'} 
+                       onChange={e => setProfile({...profile, buttonTextColor: e.target.value})} 
+                       className="w-16 h-10 rounded cursor-pointer border border-gray-200"
+                     />
+                     <input 
+                       type="text" 
+                       value={profile.buttonTextColor || '#ffffff'} 
+                       onChange={e => setProfile({...profile, buttonTextColor: e.target.value})} 
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
+                       placeholder="#ffffff"
+                     />
+                   </div>
+                 </div>
+              </div>
+
               <div className="space-y-4">
                  <label className="text-xs font-semibold text-slate-500 uppercase">Theme Preset</label>
                  <div className="grid grid-cols-3 gap-3">

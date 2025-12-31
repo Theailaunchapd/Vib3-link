@@ -119,6 +119,10 @@ export interface UserProfile {
   headerImagePosition?: string; // CSS object-position (default: 'center')
   headerImageFit?: 'cover' | 'contain'; // CSS object-fit (default: 'cover')
 
+  // Button Styling
+  buttonColor?: string; // Primary button color (default: '#000000')
+  buttonTextColor?: string; // Button text color (default: '#ffffff')
+
   // Unified Content List
   content: ContentItem[];
 

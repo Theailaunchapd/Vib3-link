@@ -455,7 +455,9 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
 
                 // --- LINK ---
                 if (block.type === 'link') {
-                    const link = block as any; 
+                    const link = block as any;
+                    const hasCustomColors = profile.buttonColor || profile.buttonTextColor;
+                    
                     return (
                         <a 
                             key={link.id}
@@ -463,7 +465,11 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                             target="_blank"
                             rel="noreferrer"
                             onClick={() => handleLinkClick(link.id)}
-                            className={`block w-full py-4 px-6 text-center font-medium transition-all flex items-center justify-between group ${buttonClasses[profile.theme]}`}
+                            className={`block w-full py-4 px-6 text-center font-medium transition-all flex items-center justify-between group ${hasCustomColors ? 'rounded-xl' : buttonClasses[profile.theme]}`}
+                            style={hasCustomColors ? {
+                                backgroundColor: profile.buttonColor || '#000000',
+                                color: profile.buttonTextColor || '#ffffff'
+                            } : undefined}
                         >
                             <span className="flex-1">{link.title}</span>
                             <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/>

@@ -396,13 +396,17 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
   const containerClasses = {
     modern: "bg-white text-slate-900",
     retro: "bg-[#f4e4bc] text-[#4a3b2a] font-serif border-4 border-[#4a3b2a]",
-    glass: "bg-white/10 backdrop-blur-lg text-white border border-white/20"
+    glass: "bg-white/10 backdrop-blur-lg text-white border border-white/20",
+    microsoft90s: "bg-[#c0c0c0] text-black border-2 border-[#808080]",
+    apple90s: "bg-gradient-to-br from-[#5bcefa] to-[#f5a9b8] text-[#1d1d1f]"
   };
 
   const buttonClasses = {
     modern: "bg-slate-900 text-white hover:bg-slate-800 rounded-xl",
     retro: "bg-[#ff6b6b] text-[#4a3b2a] border-2 border-[#4a3b2a] shadow-[4px_4px_0px_0px_#4a3b2a] hover:translate-y-1 hover:shadow-none transition-all rounded-none",
-    glass: "bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-2xl"
+    glass: "bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-2xl",
+    microsoft90s: "bg-[#c0c0c0] text-black border-t-2 border-l-2 border-r-2 border-b-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] hover:border-t-[#e0e0e0] hover:border-l-[#e0e0e0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white rounded-none",
+    apple90s: "bg-gradient-to-r from-[#ff6b9d] via-[#c471ed] to-[#12c2e9] text-white hover:from-[#ff8db4] hover:via-[#d391f0] hover:to-[#4fd1f0] rounded-full shadow-lg hover:shadow-xl transition-all"
   };
 
   const getContrastYIQ = (hexcolor: string) => {
@@ -486,7 +490,7 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                     const imgClass = product.imageFit === 'contain' ? 'object-contain p-2' : 'object-cover';
                     
                     return (
-                        <div key={product.id} className={`w-full ${profile.theme === 'glass' ? 'bg-white/10' : profile.theme === 'retro' ? 'bg-[#ffedcd] border-2 border-[#4a3b2a]' : 'bg-white shadow-sm border border-gray-100'} rounded-xl overflow-hidden flex gap-4 p-3`}>
+                        <div key={product.id} className={`w-full ${profile.theme === 'glass' ? 'bg-white/10' : profile.theme === 'retro' ? 'bg-[#ffedcd] border-2 border-[#4a3b2a]' : profile.theme === 'microsoft90s' ? 'bg-[#d4d0c8] border-2 border-[#808080]' : profile.theme === 'apple90s' ? 'bg-gradient-to-br from-[#ffb3d9] to-[#b3f0ff] border-2 border-[#ff6b9d]' : 'bg-white shadow-sm border border-gray-100'} rounded-xl overflow-hidden flex gap-4 p-3`}>
                              <div className="w-20 h-20 bg-gray-200 shrink-0 rounded-lg overflow-hidden flex items-center justify-center">
                                 {product.imageUrl ? <img src={product.imageUrl} alt={product.title} className={`w-full h-full ${imgClass}`}/> : product.images[0] ? <img src={product.images[0]} alt={product.title} className={`w-full h-full ${imgClass}`}/> : <ShoppingBag size={24} className="text-slate-300 mx-auto"/>}
                             </div>

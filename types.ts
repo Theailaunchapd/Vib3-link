@@ -114,6 +114,11 @@ export interface UserProfile {
   backgroundColor: string;
   theme: 'modern' | 'retro' | 'glass';
 
+  // Profile Header Image Settings
+  headerHeight?: number; // Height in pixels (default: 300)
+  headerImagePosition?: string; // CSS object-position (default: 'center')
+  headerImageFit?: 'cover' | 'contain'; // CSS object-fit (default: 'cover')
+
   // Unified Content List
   content: ContentItem[];
 

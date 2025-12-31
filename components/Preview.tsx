@@ -418,11 +418,15 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
   const Content = () => (
     <div className={`relative w-full h-full overflow-y-auto overflow-x-hidden ${containerClasses[profile.theme]} bg-opacity-95 ${isLive ? 'min-h-screen' : ''} scrollbar-hide pt-14 pb-10`}>
         {/* Header Image Section - Scrolls with content */}
-        <div className="relative w-full h-80 shrink-0 group">
+        <div className="relative w-full shrink-0 group" style={{ height: `${profile.headerHeight || 300}px` }}>
             <img 
                 src={profile.avatarUrl} 
                 alt="profile header" 
-                className="w-full h-full object-cover" 
+                className="w-full h-full"
+                style={{
+                  objectFit: profile.headerImageFit || 'cover',
+                  objectPosition: profile.headerImagePosition || 'center'
+                }}
             />
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>

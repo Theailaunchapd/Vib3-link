@@ -469,9 +469,17 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
               <label className="text-xs font-semibold text-slate-500 uppercase">Profile Header</label>
               
               {/* Profile Large Image Editor */}
-              <div className="relative w-full aspect-[16/9] bg-gray-100 rounded-xl overflow-hidden border border-gray-200 group shadow-sm">
+              <div className="relative w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200 group shadow-sm" style={{ height: `${profile.headerHeight || 300}px` }}>
                   {profile.avatarUrl ? (
-                      <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="Profile Header" />
+                      <img 
+                        src={profile.avatarUrl} 
+                        className="w-full h-full" 
+                        style={{
+                          objectFit: profile.headerImageFit || 'cover',
+                          objectPosition: profile.headerImagePosition || 'center'
+                        }}
+                        alt="Profile Header" 
+                      />
                   ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
                           <ImageIcon size={32} className="mb-2 opacity-50"/>
@@ -487,6 +495,87 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                       </label>
                   </div>
               </div>
+
+              {/* Header Image Controls */}
+              {profile.avatarUrl && (
+                <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  {/* Height Control */}
+                  <div>
+                    <label className="text-xs font-medium text-slate-700 mb-2 block flex items-center gap-2">
+                      <span>Header Height: {profile.headerHeight || 300}px</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="200"
+                      max="600"
+                      value={profile.headerHeight || 300}
+                      onChange={(e) => setProfile({...profile, headerHeight: parseInt(e.target.value)})}
+                      className="w-full accent-blue-600"
+                    />
+                  </div>
+
+                  {/* Image Fit Control */}
+                  <div>
+                    <label className="text-xs font-medium text-slate-700 mb-2 block">Image Fit</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setProfile({...profile, headerImageFit: 'cover'})}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
+                          (profile.headerImageFit || 'cover') === 'cover' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white text-slate-600 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Fill Screen
+                      </button>
+                      <button
+                        onClick={() => setProfile({...profile, headerImageFit: 'contain'})}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
+                          profile.headerImageFit === 'contain' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white text-slate-600 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Fit to Screen
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Position Control */}
+                  <div>
+                    <label className="text-xs font-medium text-slate-700 mb-2 block">Image Position</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['top', 'center', 'bottom'].map((vertical) => 
+                        ['left', 'center', 'right'].map((horizontal) => {
+                          const position = `${vertical} ${horizontal}`;
+                          const isActive = (profile.headerImagePosition || 'center') === position;
+                          return (
+                            <button
+                              key={position}
+                              onClick={() => setProfile({...profile, headerImagePosition: position})}
+                              className={`px-2 py-2 rounded text-xs font-medium transition-colors ${
+                                isActive 
+                                  ? 'bg-blue-600 text-white' 
+                                  : 'bg-white text-slate-600 border border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {vertical === 'center' && horizontal === 'center' ? 'Center' : 
+                               vertical === 'top' && horizontal === 'left' ? '↖' :
+                               vertical === 'top' && horizontal === 'center' ? '↑' :
+                               vertical === 'top' && horizontal === 'right' ? '↗' :
+                               vertical === 'center' && horizontal === 'left' ? '←' :
+                               vertical === 'center' && horizontal === 'right' ? '→' :
+                               vertical === 'bottom' && horizontal === 'left' ? '↙' :
+                               vertical === 'bottom' && horizontal === 'center' ? '↓' :
+                               '↘'}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-4">
                  <div className="flex-1 space-y-2">

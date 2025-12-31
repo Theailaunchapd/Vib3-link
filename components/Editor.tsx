@@ -497,15 +497,15 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                         placeholder="Display Name"
                      />
                      <a 
-                        href={getPublicUrl()} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="flex items-center bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-slate-400 text-sm hover:bg-gray-100 transition-colors cursor-pointer group"
-                     >
-                        <span className="group-hover:text-blue-500 transition-colors">vib3.ai/</span>
-                        <span className="text-slate-900 font-medium group-hover:text-blue-600 transition-colors">{profile.username}</span>
-                        <ExternalLink size={14} className="ml-2 text-slate-400 group-hover:text-blue-500 transition-colors"/>
-                     </a>
+                       href={getPublicUrl()} 
+                       target="_blank" 
+                       rel="noreferrer"
+                       className="flex items-center bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-slate-400 text-sm hover:bg-gray-100 transition-colors cursor-pointer group"
+                    >
+                       <span className="group-hover:text-blue-500 transition-colors">vib3link.com/</span>
+                       <span className="text-slate-900 font-medium group-hover:text-blue-600 transition-colors">{profile.username}</span>
+                       <ExternalLink size={14} className="ml-2 text-slate-400 group-hover:text-blue-500 transition-colors"/>
+                    </a>
                      <textarea 
                         value={profile.bio}
                         onChange={e => setProfile({...profile, bio: e.target.value})}

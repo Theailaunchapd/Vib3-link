@@ -5,7 +5,7 @@ import { UserProfile, AIModel, ContentItem, Product } from '../types';
 import { generateBioWithThinking, generateProfileImage, generateBackgroundVideo, editImageWithPrompt, generateWelcomeSpeech, getTrendingTopics, fileToBase64, generateProductDescription, generateThemeFromDescription } from '../services/geminiService';
 import { generateThemeWithAI } from '../services/openaiService';
 import { db_saveProfile } from '../services/storage';
-import { Wand2, Image as ImageIcon, Video, Mic, Plus, Trash2, Layout, Link as LinkIcon, Edit3, Loader2, Sparkles, AlertCircle, ShoppingBag, CreditCard, X, CheckCircle2, BarChart2, Globe, Copy, ExternalLink, Calendar, MoveUp, MoveDown, ArrowUp, ArrowDown, ChevronsUp, GripVertical, Settings, LogOut, Upload, Paintbrush } from 'lucide-react';
+import { Wand2, Image as ImageIcon, Video, Mic, Plus, Trash2, Layout, Link as LinkIcon, Edit3, Loader2, Sparkles, AlertCircle, ShoppingBag, CreditCard, X, CheckCircle2, BarChart2, Globe, Copy, ExternalLink, Calendar, MoveUp, MoveDown, ArrowUp, ArrowDown, ChevronsUp, GripVertical, Settings, LogOut, Upload, Paintbrush, Instagram, Linkedin, Mail, Music } from 'lucide-react';
 import ProductForm from './ProductForm';
 import { auth_logout } from '../services/auth';
 
@@ -597,6 +597,70 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                     <Wand2 size={16} className="mb-1"/>
                     AI Write
                  </button>
+              </div>
+            </div>
+
+            {/* Social Media Links */}
+            <div className="space-y-4">
+              <label className="text-xs font-semibold text-slate-500 uppercase">Social Media Icons</label>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                <p className="text-xs text-slate-600 mb-3">Add your social media links. Icons will appear on your header image.</p>
+
+                {/* Instagram */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <Instagram size={20} />
+                  </div>
+                  <input
+                    type="text"
+                    value={profile.socialLinks?.instagram || ''}
+                    onChange={e => setProfile({...profile, socialLinks: {...profile.socialLinks, instagram: e.target.value}})}
+                    placeholder="Instagram URL (e.g., https://instagram.com/username)"
+                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+
+                {/* TikTok */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white shrink-0">
+                    <Music size={20} />
+                  </div>
+                  <input
+                    type="text"
+                    value={profile.socialLinks?.tiktok || ''}
+                    onChange={e => setProfile({...profile, socialLinks: {...profile.socialLinks, tiktok: e.target.value}})}
+                    placeholder="TikTok URL (e.g., https://tiktok.com/@username)"
+                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+
+                {/* LinkedIn */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <Linkedin size={20} />
+                  </div>
+                  <input
+                    type="text"
+                    value={profile.socialLinks?.linkedin || ''}
+                    onChange={e => setProfile({...profile, socialLinks: {...profile.socialLinks, linkedin: e.target.value}})}
+                    placeholder="LinkedIn URL (e.g., https://linkedin.com/in/username)"
+                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <Mail size={20} />
+                  </div>
+                  <input
+                    type="email"
+                    value={profile.socialLinks?.email || ''}
+                    onChange={e => setProfile({...profile, socialLinks: {...profile.socialLinks, email: e.target.value}})}
+                    placeholder="Email address (e.g., your@email.com)"
+                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-600"
+                  />
+                </div>
               </div>
             </div>
 

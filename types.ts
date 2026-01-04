@@ -106,6 +106,13 @@ export interface StripePayment {
   createdAt: string;
 }
 
+export interface SocialMediaLinks {
+  instagram?: string;
+  tiktok?: string;
+  linkedin?: string;
+  email?: string;
+}
+
 export interface UserProfile {
   userId: string; // Link to User
   username: string; // Unique handle for the URL
@@ -122,6 +129,9 @@ export interface UserProfile {
   headerHeight?: number; // Height in pixels (default: 300)
   headerImagePosition?: string; // CSS object-position (default: 'center')
   headerImageFit?: 'cover' | 'contain'; // CSS object-fit (default: 'cover')
+
+  // Social Media Links
+  socialLinks?: SocialMediaLinks;
 
   // Button Styling
   buttonColor?: string; // Primary button color (default: '#000000')

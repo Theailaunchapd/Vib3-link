@@ -1079,16 +1079,22 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                  <div className="space-y-2">
                    <label className="text-xs font-medium text-slate-700">Background</label>
                    <div className="flex gap-2 items-center">
-                     <input 
-                       type="color" 
-                       value={profile.backgroundColor || '#ffffff'} 
-                       onChange={e => setProfile({...profile, backgroundColor: e.target.value, backgroundType: 'color'})} 
+                     <input
+                       type="color"
+                       value={profile.backgroundColor || '#ffffff'}
+                       onChange={e => {
+                         const newColor = e.target.value;
+                         setProfile(prev => ({...prev, backgroundColor: newColor, backgroundType: 'color'}));
+                       }}
                        className="w-16 h-10 rounded cursor-pointer border border-gray-200"
                      />
-                     <input 
-                       type="text" 
-                       value={profile.backgroundColor || '#ffffff'} 
-                       onChange={e => setProfile({...profile, backgroundColor: e.target.value, backgroundType: 'color'})} 
+                     <input
+                       type="text"
+                       value={profile.backgroundColor || '#ffffff'}
+                       onChange={e => {
+                         const newColor = e.target.value;
+                         setProfile(prev => ({...prev, backgroundColor: newColor, backgroundType: 'color'}));
+                       }}
                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                        placeholder="#ffffff"
                      />
@@ -1099,16 +1105,22 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                  <div className="space-y-2">
                    <label className="text-xs font-medium text-slate-700">Button Background</label>
                    <div className="flex gap-2 items-center">
-                     <input 
-                       type="color" 
-                       value={profile.buttonColor || '#000000'} 
-                       onChange={e => setProfile({...profile, buttonColor: e.target.value})} 
+                     <input
+                       type="color"
+                       value={profile.buttonColor || '#000000'}
+                       onChange={e => {
+                         const newColor = e.target.value;
+                         setProfile(prev => ({...prev, buttonColor: newColor}));
+                       }}
                        className="w-16 h-10 rounded cursor-pointer border border-gray-200"
                      />
-                     <input 
-                       type="text" 
-                       value={profile.buttonColor || '#000000'} 
-                       onChange={e => setProfile({...profile, buttonColor: e.target.value})} 
+                     <input
+                       type="text"
+                       value={profile.buttonColor || '#000000'}
+                       onChange={e => {
+                         const newColor = e.target.value;
+                         setProfile(prev => ({...prev, buttonColor: newColor}));
+                       }}
                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                        placeholder="#000000"
                      />
@@ -1118,16 +1130,22 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                  <div className="space-y-2">
                    <label className="text-xs font-medium text-slate-700">Button Text</label>
                    <div className="flex gap-2 items-center">
-                     <input 
-                       type="color" 
-                       value={profile.buttonTextColor || '#ffffff'} 
-                       onChange={e => setProfile({...profile, buttonTextColor: e.target.value})} 
+                     <input
+                       type="color"
+                       value={profile.buttonTextColor || '#ffffff'}
+                       onChange={e => {
+                         const newColor = e.target.value;
+                         setProfile(prev => ({...prev, buttonTextColor: newColor}));
+                       }}
                        className="w-16 h-10 rounded cursor-pointer border border-gray-200"
                      />
-                     <input 
-                       type="text" 
-                       value={profile.buttonTextColor || '#ffffff'} 
-                       onChange={e => setProfile({...profile, buttonTextColor: e.target.value})} 
+                     <input
+                       type="text"
+                       value={profile.buttonTextColor || '#ffffff'}
+                       onChange={e => {
+                         const newColor = e.target.value;
+                         setProfile(prev => ({...prev, buttonTextColor: newColor}));
+                       }}
                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                        placeholder="#ffffff"
                      />
@@ -1147,7 +1165,10 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                     ].map((theme) => (
                         <button
                             key={theme.value}
-                            onClick={() => setProfile({...profile, theme: theme.value as any})}
+                            onClick={() => {
+                              const newTheme = theme.value;
+                              setProfile(prev => ({...prev, theme: newTheme as any}));
+                            }}
                             className={`py-3 rounded-lg border text-sm ${profile.theme === theme.value ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-50 border-gray-200 text-slate-700 hover:bg-gray-100'}`}
                         >
                             {theme.label}
@@ -1159,7 +1180,7 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
               <div className="space-y-4">
                  <label className="text-xs font-semibold text-slate-500 uppercase">Background</label>
                  <div className="grid grid-cols-3 gap-2">
-                     <button onClick={() => setProfile({...profile, backgroundType: 'color'})} className={`h-24 rounded-lg bg-gray-200 text-slate-500 text-xs font-bold ${profile.backgroundType === 'color' ? 'ring-2 ring-blue-500' : ''}`}>Color</button>
+                     <button onClick={() => setProfile(prev => ({...prev, backgroundType: 'color'}))} className={`h-24 rounded-lg bg-gray-200 text-slate-500 text-xs font-bold ${profile.backgroundType === 'color' ? 'ring-2 ring-blue-500' : ''}`}>Color</button>
                      
                      {/* Image Option with Upload */}
                      <div className={`relative h-24 rounded-lg bg-gray-200 overflow-hidden group ${profile.backgroundType === 'image' ? 'ring-2 ring-blue-500' : ''}`}>
@@ -1195,29 +1216,43 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
               {profile.backgroundType === 'color' && (
                   <div className="space-y-2">
                       <label className="text-xs font-semibold text-slate-500 uppercase">Color Value</label>
-                      <input type="color" value={profile.backgroundColor} onChange={e => setProfile({...profile, backgroundColor: e.target.value})} className="w-full h-10 rounded cursor-pointer border border-gray-200"/>
+                      <input
+                        type="color"
+                        value={profile.backgroundColor}
+                        onChange={e => {
+                          const newColor = e.target.value;
+                          setProfile(prev => ({...prev, backgroundColor: newColor}));
+                        }}
+                        className="w-full h-10 rounded cursor-pointer border border-gray-200"
+                      />
                   </div>
               )}
 
               {/* Button Colors Section */}
               <div className="space-y-4">
                  <label className="text-xs font-semibold text-slate-500 uppercase">Button Colors</label>
-                 
+
                  <div className="space-y-3">
                    {/* Button Background Color */}
                    <div className="space-y-2">
                      <label className="text-xs font-medium text-slate-700">Button Background</label>
                      <div className="flex gap-2 items-center">
-                       <input 
-                         type="color" 
-                         value={profile.buttonColor || '#000000'} 
-                         onChange={e => setProfile({...profile, buttonColor: e.target.value})} 
+                       <input
+                         type="color"
+                         value={profile.buttonColor || '#000000'}
+                         onChange={e => {
+                           const newColor = e.target.value;
+                           setProfile(prev => ({...prev, buttonColor: newColor}));
+                         }}
                          className="w-16 h-10 rounded cursor-pointer border border-gray-200"
                        />
-                       <input 
-                         type="text" 
-                         value={profile.buttonColor || '#000000'} 
-                         onChange={e => setProfile({...profile, buttonColor: e.target.value})} 
+                       <input
+                         type="text"
+                         value={profile.buttonColor || '#000000'}
+                         onChange={e => {
+                           const newColor = e.target.value;
+                           setProfile(prev => ({...prev, buttonColor: newColor}));
+                         }}
                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                          placeholder="#000000"
                        />
@@ -1228,16 +1263,22 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                    <div className="space-y-2">
                      <label className="text-xs font-medium text-slate-700">Button Text</label>
                      <div className="flex gap-2 items-center">
-                       <input 
-                         type="color" 
-                         value={profile.buttonTextColor || '#ffffff'} 
-                         onChange={e => setProfile({...profile, buttonTextColor: e.target.value})} 
+                       <input
+                         type="color"
+                         value={profile.buttonTextColor || '#ffffff'}
+                         onChange={e => {
+                           const newColor = e.target.value;
+                           setProfile(prev => ({...prev, buttonTextColor: newColor}));
+                         }}
                          className="w-16 h-10 rounded cursor-pointer border border-gray-200"
                        />
-                       <input 
-                         type="text" 
-                         value={profile.buttonTextColor || '#ffffff'} 
-                         onChange={e => setProfile({...profile, buttonTextColor: e.target.value})} 
+                       <input
+                         type="text"
+                         value={profile.buttonTextColor || '#ffffff'}
+                         onChange={e => {
+                           const newColor = e.target.value;
+                           setProfile(prev => ({...prev, buttonTextColor: newColor}));
+                         }}
                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                          placeholder="#ffffff"
                        />

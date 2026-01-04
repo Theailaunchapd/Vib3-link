@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, Product, ContentItem, ProductVariationOption } from '../types';
 import LiveAssistant from './LiveAssistant';
-import { MessageCircle, Play, Pause, ExternalLink, ShoppingBag, ChevronLeft, CreditCard, Check, Calendar, Clock, ChevronRight, Battery, Wifi, Signal } from 'lucide-react';
+import { MessageCircle, Play, Pause, ExternalLink, ShoppingBag, ChevronLeft, CreditCard, Check, Calendar, Clock, ChevronRight, Battery, Wifi, Signal, Instagram, Linkedin, Mail, Music } from 'lucide-react';
 import { sendChatMessage } from '../services/geminiService';
 import { trackView, trackClick, trackRevenue } from '../services/storage';
 
@@ -423,9 +423,9 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
     <div className={`relative w-full h-full overflow-y-auto overflow-x-hidden ${containerClasses[profile.theme]} bg-opacity-95 ${isLive ? 'min-h-screen' : ''} scrollbar-hide pt-14 pb-10`}>
         {/* Header Image Section - Scrolls with content */}
         <div className="relative w-full shrink-0 group" style={{ height: `${profile.headerHeight || 300}px` }}>
-            <img 
-                src={profile.avatarUrl} 
-                alt="profile header" 
+            <img
+                src={profile.avatarUrl}
+                alt="profile header"
                 className="w-full h-full"
                 style={{
                   objectFit: profile.headerImageFit || 'cover',
@@ -434,7 +434,55 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
             />
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-            
+
+            {/* Social Media Icons */}
+            {(profile.socialLinks?.instagram || profile.socialLinks?.tiktok || profile.socialLinks?.linkedin || profile.socialLinks?.email) && (
+                <div className="absolute top-6 right-6 flex gap-3 z-20">
+                    {profile.socialLinks.instagram && (
+                        <a
+                            href={profile.socialLinks.instagram}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
+                            title="Instagram"
+                        >
+                            <Instagram size={18} />
+                        </a>
+                    )}
+                    {profile.socialLinks.tiktok && (
+                        <a
+                            href={profile.socialLinks.tiktok}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
+                            title="TikTok"
+                        >
+                            <Music size={18} />
+                        </a>
+                    )}
+                    {profile.socialLinks.linkedin && (
+                        <a
+                            href={profile.socialLinks.linkedin}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
+                            title="LinkedIn"
+                        >
+                            <Linkedin size={18} />
+                        </a>
+                    )}
+                    {profile.socialLinks.email && (
+                        <a
+                            href={`mailto:${profile.socialLinks.email}`}
+                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
+                            title="Email"
+                        >
+                            <Mail size={18} />
+                        </a>
+                    )}
+                </div>
+            )}
+
             {/* Name and Bio Overlay */}
             <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10">
                 <h1 className="text-3xl font-bold mb-2 drop-shadow-md leading-tight">{profile.name}</h1>
@@ -443,7 +491,7 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
 
             {/* Voice Welcome Button */}
             {profile.voiceWelcomeUrl && (
-                <button 
+                <button
                     onClick={(e) => { e.stopPropagation(); playWelcome(); }}
                     className="absolute bottom-6 right-6 p-4 bg-white/20 backdrop-blur-md border border-white/50 rounded-full text-white shadow-lg hover:bg-white/30 transition z-20"
                 >

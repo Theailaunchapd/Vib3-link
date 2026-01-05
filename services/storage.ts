@@ -44,6 +44,11 @@ export const createDefaultProfile = (user: User): UserProfile => ({
   backgroundType: "color",
   backgroundColor: "#ffffff",
   theme: "modern",
+  storeBackgroundType: "color",
+  storeBackgroundColor: "#f8fafc",
+  storeBackgroundFit: "cover",
+  storeBackgroundPosition: "center",
+  storeBackgroundBlur: 0,
   content: [
     { type: 'link', id: "1", title: "My First Link", url: "https://google.com", active: true },
   ],
@@ -72,6 +77,13 @@ export const createDemoProfile = (user: User): UserProfile => ({
   backgroundType: "image",
   backgroundColor: "#ffffff",
   theme: "modern",
+  storeBackgroundType: "image",
+  storeBackgroundUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80",
+  storeBackgroundColor: "#f8fafc",
+  storeBackgroundFit: "cover",
+  storeBackgroundPosition: "center",
+  storeBackgroundBlur: 0,
+  storeBackgroundOverlay: { color: "#000000", opacity: 0.3 },
   content: [
     { 
         type: 'consultation', 

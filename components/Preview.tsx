@@ -16,18 +16,74 @@ const StoreCatalogView: React.FC<{
   onClose: () => void;
   onSelectProduct: (product: Product) => void;
   theme: string;
-}> = ({ products, onClose, onSelectProduct, theme }) => {
-  return (
-    <div className="absolute inset-0 z-[100] bg-slate-50 flex flex-col animate-slide-up overflow-hidden text-slate-900">
-      <div className="px-4 py-4 bg-white border-b flex items-center justify-between shrink-0">
-        <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full">
-          <ChevronLeft size={24}/>
-        </button>
-        <span className="font-bold text-sm uppercase tracking-wide">Store Catalog</span>
-        <div className="w-8"></div>
-      </div>
+  profile: UserProfile;
+}> = ({ products, onClose, onSelectProduct, theme, profile }) => {
+  // Build store background style
+  const getStoreBackgroundStyle = (): React.CSSProperties => {
+    const style: React.CSSProperties = {};
 
-      <div className="flex-1 overflow-y-auto p-4">
+    if (profile.storeBackgroundType === 'color' || !profile.storeBackgroundType) {
+      style.backgroundColor = profile.storeBackgroundColor || '#f8fafc';
+    } else if (profile.storeBackgroundType === 'image' && profile.storeBackgroundUrl) {
+      style.backgroundImage = `url(${profile.storeBackgroundUrl})`;
+      style.backgroundSize = profile.storeBackgroundFit || 'cover';
+      style.backgroundPosition = profile.storeBackgroundPosition || 'center';
+      style.backgroundRepeat = 'no-repeat';
+      if (profile.storeBackgroundBlur) {
+        style.backdropFilter = `blur(${profile.storeBackgroundBlur}px)`;
+      }
+    } else if (profile.storeBackgroundType === 'video' && profile.storeBackgroundUrl) {
+      style.backgroundColor = '#000000';
+    }
+
+    return style;
+  };
+
+  const storeBackgroundStyle = getStoreBackgroundStyle();
+  const hasOverlay = profile.storeBackgroundOverlay && profile.storeBackgroundOverlay.opacity > 0;
+
+  return (
+    <div className="absolute inset-0 z-[100] flex flex-col animate-slide-up overflow-hidden text-slate-900" style={storeBackgroundStyle}>
+      {/* Video Background */}
+      {profile.storeBackgroundType === 'video' && profile.storeBackgroundUrl && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            objectFit: (profile.storeBackgroundFit || 'cover') as any,
+            objectPosition: profile.storeBackgroundPosition || 'center',
+            filter: profile.storeBackgroundBlur ? `blur(${profile.storeBackgroundBlur}px)` : undefined,
+          }}
+        >
+          <source src={profile.storeBackgroundUrl} type="video/mp4" />
+        </video>
+      )}
+
+      {/* Overlay */}
+      {hasOverlay && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundColor: profile.storeBackgroundOverlay!.color,
+            opacity: profile.storeBackgroundOverlay!.opacity,
+          }}
+        />
+      )}
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="px-4 py-4 bg-white/95 backdrop-blur-sm border-b flex items-center justify-between shrink-0">
+          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full">
+            <ChevronLeft size={24}/>
+          </button>
+          <span className="font-bold text-sm uppercase tracking-wide">Store Catalog</span>
+          <div className="w-8"></div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-md mx-auto w-full space-y-4">
           {products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
@@ -78,6 +134,7 @@ const StoreCatalogView: React.FC<{
               );
             })
           )}
+        </div>
         </div>
       </div>
     </div>
@@ -726,6 +783,7 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                 <div className="w-full max-w-md h-full max-h-[90vh] relative rounded-2xl overflow-hidden">
                     <StoreCatalogView
                         products={allProducts}
+                        profile={profile}
                         onClose={() => setShowCatalog(false)}
                         onSelectProduct={(product) => {
                           setShowCatalog(false);
@@ -789,6 +847,7 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
         {showCatalog && (
             <StoreCatalogView
                 products={allProducts}
+                profile={profile}
                 onClose={() => setShowCatalog(false)}
                 onSelectProduct={(product) => {
                   setShowCatalog(false);

@@ -348,10 +348,23 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
         const file = e.target.files[0];
         const base64 = await fileToBase64(file);
         const dataUrl = `data:${file.type};base64,${base64}`;
-        setProfile(p => ({ 
-            ...p, 
-            backgroundType: type, 
-            backgroundUrl: dataUrl 
+        setProfile(p => ({
+            ...p,
+            backgroundType: type,
+            backgroundUrl: dataUrl
+        }));
+    }
+  };
+
+  const handleStoreBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
+    if (e.target.files?.[0]) {
+        const file = e.target.files[0];
+        const base64 = await fileToBase64(file);
+        const dataUrl = `data:${file.type};base64,${base64}`;
+        setProfile(p => ({
+            ...p,
+            storeBackgroundType: type,
+            storeBackgroundUrl: dataUrl
         }));
     }
   };
@@ -1052,6 +1065,172 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                                 Disconnect
                             </button>
                         </div>
+                    )}
+                </div>
+
+                {/* Store Background Customization */}
+                <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 space-y-4">
+                    <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <ImageIcon size={16} /> Store Background
+                    </h3>
+
+                    {/* Background Type Selection */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-semibold text-slate-500 uppercase">Background Type</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button
+                                onClick={() => setProfile(prev => ({...prev, storeBackgroundType: 'color'}))}
+                                className={`h-20 rounded-lg bg-gray-200 text-slate-500 text-xs font-bold ${profile.storeBackgroundType === 'color' ? 'ring-2 ring-blue-500' : ''}`}
+                            >
+                                Color
+                            </button>
+
+                            {/* Image Option with Upload */}
+                            <div className={`relative h-20 rounded-lg bg-gray-200 overflow-hidden group ${profile.storeBackgroundType === 'image' ? 'ring-2 ring-blue-500' : ''}`}>
+                                {profile.storeBackgroundType === 'image' && profile.storeBackgroundUrl ? (
+                                    <img src={profile.storeBackgroundUrl} alt="store bg" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-800">Image</span>
+                                )}
+                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-10">
+                                    <Upload size={18} />
+                                    <span className="text-[10px] font-bold mt-1">Upload</span>
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleStoreBackgroundUpload(e, 'image')} />
+                                </label>
+                            </div>
+
+                            {/* Video Option with Upload */}
+                            <div className={`relative h-20 rounded-lg bg-gray-200 overflow-hidden group ${profile.storeBackgroundType === 'video' ? 'ring-2 ring-blue-500' : ''}`}>
+                                {profile.storeBackgroundType === 'video' ? (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                                        <Video size={22} className="text-white"/>
+                                    </div>
+                                ) : (
+                                   <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-800">Video</span>
+                                )}
+                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-10">
+                                    <Upload size={18} />
+                                    <span className="text-[10px] font-bold mt-1">Upload</span>
+                                    <input type="file" className="hidden" accept="video/*" onChange={(e) => handleStoreBackgroundUpload(e, 'video')} />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Color Picker (if color type selected) */}
+                    {(profile.storeBackgroundType === 'color' || !profile.storeBackgroundType) && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase">Background Color</label>
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    type="color"
+                                    value={profile.storeBackgroundColor || '#ffffff'}
+                                    onChange={(e) => setProfile(prev => ({...prev, storeBackgroundColor: e.target.value}))}
+                                    className="w-12 h-12 rounded-lg cursor-pointer border border-gray-300"
+                                />
+                                <input
+                                    type="text"
+                                    value={profile.storeBackgroundColor || '#ffffff'}
+                                    onChange={(e) => setProfile(prev => ({...prev, storeBackgroundColor: e.target.value}))}
+                                    className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="#ffffff"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Advanced Settings (for image/video backgrounds) */}
+                    {(profile.storeBackgroundType === 'image' || profile.storeBackgroundType === 'video') && (
+                        <>
+                            {/* Background Fit */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-500 uppercase">Background Fit</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => setProfile(prev => ({...prev, storeBackgroundFit: 'cover'}))}
+                                        className={`py-2 rounded-lg border text-sm ${(profile.storeBackgroundFit === 'cover' || !profile.storeBackgroundFit) ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-200 text-slate-700 hover:bg-gray-50'}`}
+                                    >
+                                        Cover
+                                    </button>
+                                    <button
+                                        onClick={() => setProfile(prev => ({...prev, storeBackgroundFit: 'contain'}))}
+                                        className={`py-2 rounded-lg border text-sm ${profile.storeBackgroundFit === 'contain' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-200 text-slate-700 hover:bg-gray-50'}`}
+                                    >
+                                        Contain
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Background Position */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-500 uppercase">Background Position</label>
+                                <select
+                                    value={profile.storeBackgroundPosition || 'center'}
+                                    onChange={(e) => setProfile(prev => ({...prev, storeBackgroundPosition: e.target.value}))}
+                                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="center">Center</option>
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                    <option value="left">Left</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+
+                            {/* Background Blur */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-500 uppercase">
+                                    Background Blur ({profile.storeBackgroundBlur || 0}px)
+                                </label>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="20"
+                                    value={profile.storeBackgroundBlur || 0}
+                                    onChange={(e) => setProfile(prev => ({...prev, storeBackgroundBlur: parseInt(e.target.value)}))}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            {/* Overlay Settings */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-500 uppercase">Overlay</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="color"
+                                        value={profile.storeBackgroundOverlay?.color || '#000000'}
+                                        onChange={(e) => setProfile(prev => ({
+                                            ...prev,
+                                            storeBackgroundOverlay: {
+                                                color: e.target.value,
+                                                opacity: prev.storeBackgroundOverlay?.opacity || 0
+                                            }
+                                        }))}
+                                        className="w-12 h-12 rounded-lg cursor-pointer border border-gray-300"
+                                    />
+                                    <div className="flex-1">
+                                        <label className="text-xs text-slate-500">
+                                            Opacity ({Math.round((profile.storeBackgroundOverlay?.opacity || 0) * 100)}%)
+                                        </label>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.05"
+                                            value={profile.storeBackgroundOverlay?.opacity || 0}
+                                            onChange={(e) => setProfile(prev => ({
+                                                ...prev,
+                                                storeBackgroundOverlay: {
+                                                    color: prev.storeBackgroundOverlay?.color || '#000000',
+                                                    opacity: parseFloat(e.target.value)
+                                                }
+                                            }))}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
 

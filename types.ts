@@ -137,6 +137,15 @@ export interface UserProfile {
   buttonColor?: string; // Primary button color (default: '#000000')
   buttonTextColor?: string; // Button text color (default: '#ffffff')
 
+  // Store Background Settings
+  storeBackgroundUrl?: string; // URL for store background image/video
+  storeBackgroundType?: 'color' | 'image' | 'video'; // Type of store background
+  storeBackgroundColor?: string; // Store background color
+  storeBackgroundOverlay?: { color: string; opacity: number }; // Overlay for store background
+  storeBackgroundBlur?: number; // Blur intensity (0-20)
+  storeBackgroundPosition?: string; // CSS object-position (default: 'center')
+  storeBackgroundFit?: 'cover' | 'contain'; // CSS object-fit (default: 'cover')
+
   // Unified Content List
   content: ContentItem[];
 

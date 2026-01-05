@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { UserProfile, AIModel, ContentItem, Product } from '../types';
 import { generateBioWithThinking, generateProfileImage, generateBackgroundVideo, editImageWithPrompt, generateWelcomeSpeech, getTrendingTopics, fileToBase64, generateProductDescription, generateThemeFromDescription } from '../services/geminiService';
-import { generateThemeWithAI } from '../services/openaiService';
 import { db_saveProfile } from '../services/storage';
 import { Wand2, Image as ImageIcon, Video, Mic, Plus, Trash2, Layout, Link as LinkIcon, Edit3, Loader2, Sparkles, AlertCircle, ShoppingBag, CreditCard, X, CheckCircle2, BarChart2, Globe, Copy, ExternalLink, Calendar, MoveUp, MoveDown, ArrowUp, ArrowDown, ChevronsUp, GripVertical, Settings, LogOut, Upload, Paintbrush, Instagram, Linkedin, Mail, Music } from 'lucide-react';
 import ProductForm from './ProductForm';
@@ -292,25 +291,33 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
     setLoadingAction('magicTheme');
     setAiError(null);
     try {
-        // Use OpenAI to generate theme configuration
-        const themeResult = await generateThemeWithAI(themePrompt);
+        // Use Gemini to generate theme configuration
+        const themeResult = await generateThemeFromDescription(themePrompt);
         
-        // Update Profile with the generated theme
+        // First update with color and theme
         setProfile(p => ({
             ...p,
             backgroundColor: themeResult.backgroundColor,
             theme: themeResult.theme,
-            backgroundType: themeResult.backgroundType,
-            backgroundUrl: themeResult.backgroundUrl || p.backgroundUrl
+            backgroundType: 'color'
         }));
 
-        // Show success message with reasoning
-        if (themeResult.reasoning) {
-            console.log('AI Theme Reasoning:', themeResult.reasoning);
+        // Then generate the background image using the AI-generated prompt
+        if (themeResult.backgroundPrompt) {
+            try {
+                const imageUrl = await generateProfileImage(themeResult.backgroundPrompt, '1K');
+                setProfile(p => ({
+                    ...p,
+                    backgroundType: 'image',
+                    backgroundUrl: imageUrl
+                }));
+            } catch (imgError) {
+                console.log('Image generation skipped, using color background');
+            }
         }
 
     } catch (e: any) {
-        setAiError(e.message || 'Failed to generate theme');
+        setAiError(e.message || 'Failed to generate theme. Check your API key.');
     } finally {
         setLoadingAction(null);
     }

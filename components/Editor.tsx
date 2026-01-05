@@ -190,6 +190,9 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
     setLoadingAction('bio');
     setAiError(null);
     try {
+      if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
+          await (window as any).aistudio.openSelectKey();
+      }
       const links = profile.content.filter(b => b.type === 'link').map((b: any) => b.title).join(', ');
       const bio = await generateBioWithThinking(profile.bio, `User name: ${profile.name}. Links: ${links}`);
       setProfile(p => ({ ...p, bio }));
@@ -203,6 +206,9 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
   const handleSuggestLinks = async () => {
     setLoadingAction('trends');
     try {
+        if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
+            await (window as any).aistudio.openSelectKey();
+        }
         const trends = await getTrendingTopics();
         const bio = await generateBioWithThinking(profile.bio, `Suggest 3 links based on these trends: ${trends.text}`);
         alert(`Trends found: ${trends.text}\n\nSuggestion: ${bio}`);
@@ -268,7 +274,7 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
   const handleGenerateTTS = async () => {
     // If prompt is empty, fallback to a standard welcome using bio
     const textToSpeak = prompt.trim() || `Hi! I'm ${profile.name}. ${profile.bio}`;
-    
+
     if (!textToSpeak) {
         setAiError("Please enter text or ensure your bio is not empty.");
         return;
@@ -277,6 +283,9 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
     setLoadingAction('tts');
     setAiError(null);
     try {
+        if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
+            await (window as any).aistudio.openSelectKey();
+        }
         const audioData = await generateWelcomeSpeech(textToSpeak, ttsVoice);
         setProfile(p => ({ ...p, voiceWelcomeUrl: audioData }));
     } catch(e: any) {
@@ -291,6 +300,10 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
     setLoadingAction('magicTheme');
     setAiError(null);
     try {
+        // Check if API key is selected
+        if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
+            await (window as any).aistudio.openSelectKey();
+        }
         // Use Gemini to generate theme configuration
         const themeResult = await generateThemeFromDescription(themePrompt);
         
@@ -360,6 +373,9 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
      if(!title) return;
      setLoadingAction(`desc-${prodId}`);
      try {
+         if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
+             await (window as any).aistudio.openSelectKey();
+         }
          const desc = await generateProductDescription(title);
          updateContentBlock(prodId, { description: desc });
      } catch(e) {

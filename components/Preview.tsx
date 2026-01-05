@@ -421,7 +421,7 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
 
   const Content = () => (
     <div className={`relative w-full h-full overflow-y-auto overflow-x-hidden ${containerClasses[profile.theme]} bg-opacity-95 ${isLive ? 'min-h-screen' : ''} scrollbar-hide pt-14 pb-10`}>
-        {/* Header Image Section - Scrolls with content */}
+        {/* Header Image Section - Clean banner without overlays */}
         <div className="relative w-full shrink-0 group" style={{ height: `${profile.headerHeight || 300}px` }}>
             <img
                 src={profile.avatarUrl}
@@ -432,62 +432,6 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                   objectPosition: profile.headerImagePosition || 'center'
                 }}
             />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-
-            {/* Social Media Icons */}
-            {(profile.socialLinks?.instagram || profile.socialLinks?.tiktok || profile.socialLinks?.linkedin || profile.socialLinks?.email) && (
-                <div className="absolute top-6 right-6 flex gap-3 z-20">
-                    {profile.socialLinks.instagram && (
-                        <a
-                            href={profile.socialLinks.instagram}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="Instagram"
-                        >
-                            <Instagram size={18} />
-                        </a>
-                    )}
-                    {profile.socialLinks.tiktok && (
-                        <a
-                            href={profile.socialLinks.tiktok}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="TikTok"
-                        >
-                            <Music size={18} />
-                        </a>
-                    )}
-                    {profile.socialLinks.linkedin && (
-                        <a
-                            href={profile.socialLinks.linkedin}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="LinkedIn"
-                        >
-                            <Linkedin size={18} />
-                        </a>
-                    )}
-                    {profile.socialLinks.email && (
-                        <a
-                            href={`mailto:${profile.socialLinks.email}`}
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="Email"
-                        >
-                            <Mail size={18} />
-                        </a>
-                    )}
-                </div>
-            )}
-
-            {/* Name and Bio Overlay */}
-            <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10">
-                <h1 className="text-3xl font-bold mb-2 drop-shadow-md leading-tight">{profile.name}</h1>
-                <p className="text-sm opacity-90 drop-shadow-md max-w-md leading-relaxed">{profile.bio}</p>
-            </div>
 
             {/* Voice Welcome Button */}
             {profile.voiceWelcomeUrl && (
@@ -500,8 +444,62 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
             )}
         </div>
 
+        {/* Social Media Icons - Below header */}
+        {(profile.socialLinks?.instagram || profile.socialLinks?.tiktok || profile.socialLinks?.linkedin || profile.socialLinks?.email) && (
+            <div className="w-full px-4 pt-6 pb-4 flex justify-center gap-3 max-w-md mx-auto">
+                {profile.socialLinks.instagram && (
+                    <a
+                        href={profile.socialLinks.instagram}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                        title="Instagram"
+                    >
+                        <Instagram size={20} />
+                    </a>
+                )}
+                {profile.socialLinks.tiktok && (
+                    <a
+                        href={profile.socialLinks.tiktok}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                        title="TikTok"
+                    >
+                        <Music size={20} />
+                    </a>
+                )}
+                {profile.socialLinks.linkedin && (
+                    <a
+                        href={profile.socialLinks.linkedin}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                        title="LinkedIn"
+                    >
+                        <Linkedin size={20} />
+                    </a>
+                )}
+                {profile.socialLinks.email && (
+                    <a
+                        href={`mailto:${profile.socialLinks.email}`}
+                        className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                        title="Email"
+                    >
+                        <Mail size={20} />
+                    </a>
+                )}
+            </div>
+        )}
+
+        {/* Name and Bio Section - Below social icons */}
+        <div className="w-full px-6 pb-6 max-w-md mx-auto text-center">
+            <h1 className="text-3xl font-bold mb-2 leading-tight">{profile.name}</h1>
+            <p className="text-sm opacity-80 leading-relaxed">{profile.bio}</p>
+        </div>
+
         {/* Dynamic Content Stream */}
-        <div className="w-full px-4 py-8 flex flex-col items-center gap-4 min-h-[300px] max-w-md mx-auto">
+        <div className="w-full px-4 py-4 flex flex-col items-center gap-4 min-h-[300px] max-w-md mx-auto">
             {profile.content.map((block) => {
                 if (!block.active) return null;
 
@@ -587,18 +585,6 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
 
                 return null;
             })}
-        </div>
-        
-        {/* Sticky Chat/AI Button Container */}
-        <div className="sticky bottom-6 w-full flex justify-center pointer-events-none z-30">
-            <button 
-                onClick={() => setShowLive(true)}
-                className="pointer-events-auto p-3 px-5 bg-black text-white rounded-full shadow-2xl hover:scale-105 transition-all flex items-center gap-2 border border-white/20 backdrop-blur-sm"
-                title="Talk to AI"
-            >
-                <MessageCircle size={20} />
-                <span className="font-bold text-sm">AI Assistant</span>
-            </button>
         </div>
     </div>
   );

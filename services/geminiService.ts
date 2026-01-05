@@ -2,8 +2,14 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { AIModel, ContentItem } from "../types";
 
-// Helper to get client with current key
-const getClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to get client using Replit AI Integrations
+const getClient = () => new GoogleGenAI({ 
+  apiKey: import.meta.env.VITE_AI_INTEGRATIONS_GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY || '',
+  httpOptions: {
+    apiVersion: "",
+    baseUrl: import.meta.env.VITE_AI_INTEGRATIONS_GEMINI_BASE_URL || process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
+  }
+});
 
 // 1. Thinking Mode for Complex Bio Generation
 export const generateBioWithThinking = async (currentBio: string, context: string): Promise<string> => {

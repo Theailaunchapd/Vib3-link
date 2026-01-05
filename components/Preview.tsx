@@ -11,7 +11,80 @@ interface PreviewProps {
   isLive?: boolean;
 }
 
-const CheckoutView: React.FC<{ product: Product; onClose: () => void; theme: string; stripeConnected: boolean; username: string }> = ({ product, onClose, theme, stripeConnected, username }) => {
+const StoreCatalogView: React.FC<{
+  products: Product[];
+  onClose: () => void;
+  onSelectProduct: (product: Product) => void;
+  theme: string;
+}> = ({ products, onClose, onSelectProduct, theme }) => {
+  return (
+    <div className="absolute inset-0 z-[100] bg-slate-50 flex flex-col animate-slide-up overflow-hidden text-slate-900">
+      <div className="px-4 py-4 bg-white border-b flex items-center justify-between shrink-0">
+        <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full">
+          <ChevronLeft size={24}/>
+        </button>
+        <span className="font-bold text-sm uppercase tracking-wide">Store Catalog</span>
+        <div className="w-8"></div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-md mx-auto w-full space-y-4">
+          {products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+              <ShoppingBag size={48} className="mb-4"/>
+              <p className="text-sm">No products available</p>
+            </div>
+          ) : (
+            products.map(product => {
+              const imgClass = product.imageFit === 'contain' ? 'object-contain p-2' : 'object-cover';
+              const basePrice = parseFloat(product.price.replace(/[^0-9.-]+/g,"")) || 0;
+
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => onSelectProduct(product)}
+                  className="w-full bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden flex gap-4 p-4 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]"
+                >
+                  <div className="w-24 h-24 bg-gray-100 shrink-0 rounded-lg overflow-hidden flex items-center justify-center">
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.title} className={`w-full h-full ${imgClass}`}/>
+                    ) : product.images[0] ? (
+                      <img src={product.images[0]} alt={product.title} className={`w-full h-full ${imgClass}`}/>
+                    ) : (
+                      <ShoppingBag size={32} className="text-slate-300"/>
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col justify-center">
+                    <h4 className="font-bold text-base mb-1 text-slate-900 line-clamp-2">
+                      {product.title}
+                    </h4>
+                    <p className="text-xs text-slate-500 mb-2 line-clamp-2">
+                      {product.description || "No description"}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-lg text-blue-600">{product.price}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectProduct(product);
+                        }}
+                        className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CheckoutView: React.FC<{ product: Product; onClose: () => void; theme: string; stripeConnected: boolean; username: string; onViewCatalog?: () => void }> = ({ product, onClose, theme, stripeConnected, username, onViewCatalog }) => {
   const [step, setStep] = useState<'details' | 'form' | 'processing' | 'success'>('details');
   const [selectedImage, setSelectedImage] = useState(product.imageUrl || product.images[0] || "");
   const [selectedOptions, setSelectedOptions] = useState<Record<string, ProductVariationOption>>({});
@@ -128,13 +201,21 @@ const CheckoutView: React.FC<{ product: Product; onClose: () => void; theme: str
                 </div>
             </div>
 
-            <div className="p-4 bg-white border-t shrink-0 pb-8">
-                <button 
+            <div className="p-4 bg-white border-t shrink-0 pb-8 space-y-2">
+                <button
                     onClick={() => setStep('form')}
                     className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg transition-all"
                 >
                     Buy Now • ${finalPrice}
                 </button>
+                {onViewCatalog && (
+                  <button
+                    onClick={onViewCatalog}
+                    className="w-full py-3 bg-white text-slate-900 border-2 border-slate-900 rounded-xl font-bold transition-all hover:bg-slate-50"
+                  >
+                    View Store Catalog
+                  </button>
+                )}
             </div>
         </div>
       );
@@ -306,10 +387,16 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
   const [isPlayingWelcome, setIsPlayingWelcome] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState<{role: 'user' | 'model', text: string}[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [time, setTime] = useState("");
+
+  // Get all active products from profile.content
+  const allProducts = profile.content.filter(
+    (item): item is Product & { type: 'product' } => item.type === 'product' && item.active
+  );
 
   useEffect(() => {
     if (isLive) trackView(profile.username);
@@ -634,15 +721,34 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
          <div className="absolute inset-0 z-10">
             <Content />
          </div>
+         {showCatalog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="w-full max-w-md h-full max-h-[90vh] relative rounded-2xl overflow-hidden">
+                    <StoreCatalogView
+                        products={allProducts}
+                        onClose={() => setShowCatalog(false)}
+                        onSelectProduct={(product) => {
+                          setShowCatalog(false);
+                          setSelectedProduct(product);
+                        }}
+                        theme={profile.theme}
+                    />
+                </div>
+            </div>
+        )}
          {selectedProduct && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                 <div className="w-full max-w-md h-full max-h-[90vh] relative rounded-2xl overflow-hidden">
-                    <CheckoutView 
-                        product={selectedProduct} 
-                        onClose={() => setSelectedProduct(null)} 
+                    <CheckoutView
+                        product={selectedProduct}
+                        onClose={() => setSelectedProduct(null)}
                         theme={profile.theme}
                         stripeConnected={profile.stripeConnected}
                         username={profile.username}
+                        onViewCatalog={() => {
+                          setSelectedProduct(null);
+                          setShowCatalog(true);
+                        }}
                     />
                 </div>
             </div>
@@ -680,13 +786,28 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
         {/* Home Indicator */}
         <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/50 rounded-full z-50 mix-blend-difference"></div>
 
+        {showCatalog && (
+            <StoreCatalogView
+                products={allProducts}
+                onClose={() => setShowCatalog(false)}
+                onSelectProduct={(product) => {
+                  setShowCatalog(false);
+                  setSelectedProduct(product);
+                }}
+                theme={profile.theme}
+            />
+        )}
         {selectedProduct && (
-            <CheckoutView 
-                product={selectedProduct} 
-                onClose={() => setSelectedProduct(null)} 
+            <CheckoutView
+                product={selectedProduct}
+                onClose={() => setSelectedProduct(null)}
                 theme={profile.theme}
                 stripeConnected={profile.stripeConnected}
                 username={profile.username}
+                onViewCatalog={() => {
+                  setSelectedProduct(null);
+                  setShowCatalog(true);
+                }}
             />
         )}
         {showBookingModal && (

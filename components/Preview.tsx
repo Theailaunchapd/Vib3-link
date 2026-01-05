@@ -398,7 +398,13 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
     retro: "bg-[#f4e4bc] text-[#4a3b2a] font-serif border-4 border-[#4a3b2a]",
     glass: "bg-white/10 backdrop-blur-lg text-white border border-white/20",
     microsoft90s: "bg-[#c0c0c0] text-black border-2 border-[#808080]",
-    apple90s: "bg-gradient-to-br from-[#5bcefa] to-[#f5a9b8] text-[#1d1d1f]"
+    apple90s: "bg-gradient-to-br from-[#5bcefa] to-[#f5a9b8] text-[#1d1d1f]",
+    classic: "bg-gradient-to-b from-slate-50 to-white text-slate-900",
+    card: "bg-slate-100 text-slate-900",
+    minimal: "bg-white text-slate-900",
+    bold: "bg-slate-900 text-white",
+    professional: "bg-white text-slate-900 border-l-4 border-blue-600",
+    creative: "bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 text-slate-900"
   };
 
   const buttonClasses = {
@@ -406,7 +412,13 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
     retro: "bg-[#ff6b6b] text-[#4a3b2a] border-2 border-[#4a3b2a] shadow-[4px_4px_0px_0px_#4a3b2a] hover:translate-y-1 hover:shadow-none transition-all rounded-none",
     glass: "bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-2xl",
     microsoft90s: "bg-[#c0c0c0] text-black border-t-2 border-l-2 border-r-2 border-b-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] hover:border-t-[#e0e0e0] hover:border-l-[#e0e0e0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white rounded-none",
-    apple90s: "bg-gradient-to-r from-[#ff6b9d] via-[#c471ed] to-[#12c2e9] text-white hover:from-[#ff8db4] hover:via-[#d391f0] hover:to-[#4fd1f0] rounded-full shadow-lg hover:shadow-xl transition-all"
+    apple90s: "bg-gradient-to-r from-[#ff6b9d] via-[#c471ed] to-[#12c2e9] text-white hover:from-[#ff8db4] hover:via-[#d391f0] hover:to-[#4fd1f0] rounded-full shadow-lg hover:shadow-xl transition-all",
+    classic: "bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all",
+    card: "bg-white text-slate-900 hover:bg-slate-50 rounded-2xl border-2 border-slate-200 shadow-sm hover:shadow-md transition-all",
+    minimal: "bg-slate-900 text-white hover:bg-slate-800 rounded-full border border-slate-300",
+    bold: "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all font-semibold",
+    professional: "bg-blue-600 text-white hover:bg-blue-700 rounded-md shadow-sm hover:shadow-md transition-all border-l-4 border-blue-800",
+    creative: "bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white hover:from-purple-700 hover:via-pink-700 hover:to-orange-600 rounded-3xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"
   };
 
   const getContrastYIQ = (hexcolor: string) => {

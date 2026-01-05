@@ -1236,6 +1236,12 @@ const Editor: React.FC<EditorProps> = ({ profile, setProfile, onOpenDashboard })
                  <div className="grid grid-cols-3 gap-3">
                     {[
                       { value: 'modern', label: 'Modern' },
+                      { value: 'classic', label: 'Classic' },
+                      { value: 'minimal', label: 'Minimal' },
+                      { value: 'bold', label: 'Bold' },
+                      { value: 'professional', label: 'Professional' },
+                      { value: 'creative', label: 'Creative' },
+                      { value: 'card', label: 'Card' },
                       { value: 'retro', label: 'Retro' },
                       { value: 'glass', label: 'Glass' },
                       { value: 'microsoft90s', label: 'Microsoft 90s' },

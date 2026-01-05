@@ -435,54 +435,6 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
-            {/* Social Media Icons */}
-            {(profile.socialLinks?.instagram || profile.socialLinks?.tiktok || profile.socialLinks?.linkedin || profile.socialLinks?.email) && (
-                <div className="absolute top-6 right-6 flex gap-3 z-20">
-                    {profile.socialLinks.instagram && (
-                        <a
-                            href={profile.socialLinks.instagram}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="Instagram"
-                        >
-                            <Instagram size={18} />
-                        </a>
-                    )}
-                    {profile.socialLinks.tiktok && (
-                        <a
-                            href={profile.socialLinks.tiktok}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="TikTok"
-                        >
-                            <Music size={18} />
-                        </a>
-                    )}
-                    {profile.socialLinks.linkedin && (
-                        <a
-                            href={profile.socialLinks.linkedin}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="LinkedIn"
-                        >
-                            <Linkedin size={18} />
-                        </a>
-                    )}
-                    {profile.socialLinks.email && (
-                        <a
-                            href={`mailto:${profile.socialLinks.email}`}
-                            className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all shadow-lg hover:scale-110"
-                            title="Email"
-                        >
-                            <Mail size={18} />
-                        </a>
-                    )}
-                </div>
-            )}
-
             {/* Name and Bio Overlay */}
             <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10">
                 <h1 className="text-3xl font-bold mb-2 drop-shadow-md leading-tight">{profile.name}</h1>
@@ -499,6 +451,56 @@ const Preview: React.FC<PreviewProps> = ({ profile, isLive }) => {
                 </button>
             )}
         </div>
+
+        {/* Social Media Icons */}
+        {(profile.socialLinks?.instagram || profile.socialLinks?.tiktok || profile.socialLinks?.linkedin || profile.socialLinks?.email) && (
+            <div className="w-full flex justify-center py-4 px-4">
+                <div className="flex gap-3 max-w-md w-full justify-center">
+                    {profile.socialLinks.instagram && (
+                        <a
+                            href={profile.socialLinks.instagram}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-12 h-12 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                            title="Instagram"
+                        >
+                            <Instagram size={20} />
+                        </a>
+                    )}
+                    {profile.socialLinks.tiktok && (
+                        <a
+                            href={profile.socialLinks.tiktok}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                            title="TikTok"
+                        >
+                            <Music size={20} />
+                        </a>
+                    )}
+                    {profile.socialLinks.linkedin && (
+                        <a
+                            href={profile.socialLinks.linkedin}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                            title="LinkedIn"
+                        >
+                            <Linkedin size={20} />
+                        </a>
+                    )}
+                    {profile.socialLinks.email && (
+                        <a
+                            href={`mailto:${profile.socialLinks.email}`}
+                            className="w-12 h-12 bg-slate-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all shadow-lg"
+                            title="Email"
+                        >
+                            <Mail size={20} />
+                        </a>
+                    )}
+                </div>
+            </div>
+        )}
 
         {/* Dynamic Content Stream */}
         <div className="w-full px-4 py-8 flex flex-col items-center gap-4 min-h-[300px] max-w-md mx-auto">
